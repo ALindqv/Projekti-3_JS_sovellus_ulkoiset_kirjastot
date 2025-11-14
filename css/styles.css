@@ -1,0 +1,243 @@
+:root {
+    --albumCoverDimensions: auto;
+    --albumCoverScaling: auto;
+    --liBorderRadius: 3px;
+    --liPadding: 2px;
+    --liMarginB: 2px;
+    --tblTextAlign: left;
+}
+
+body {
+    padding: 0
+}
+
+.app {
+    display: flex;
+    flex-direction: row;
+}
+
+.search {
+    padding: 0px;
+}
+
+.artistSearch {
+    display: flex;
+    align-items: stretch;
+}
+
+.searchInput {
+    background-color: rgb(203, 203, 203);
+    border: none;
+    border-radius: 10px 0px 0px 10px;
+    min-height: 2em;
+    padding-left: 10px;
+}
+
+.searchBtn {
+    border: none;
+    border-radius: 0px 5px 5px 0px;
+    background-color: cyan;
+    min-height: 20px;
+}
+
+.artists {
+    align-self: flex-start;
+    padding-right: 5px;
+}
+
+.information {
+    display: flex;
+    justify-content: space-between;
+    align-self: flex-end;
+    max-height: 96vh;
+}
+
+.artistInformation {
+    display: flex;
+    flex-direction: column;
+    align-self: flex-start;
+    min-width: 20vw;
+    max-width: 30vw;
+    max-height: inherit;
+    flex-grow: 0;
+    flex-shrink: 0;
+    flex-basis: auto;
+    overflow: auto;
+}
+
+.artistInformation:empty {
+    display: none;
+}
+
+#artistBio {
+    padding: 5px;
+    min-height: 10lh;
+    height: 12lh;
+    min-width: var(--artistInfoMinWidth);
+    max-height: 40%;
+    box-sizing: border-box;
+    overflow-y: auto;
+    overflow-x: hidden;
+    background-color: rgb(223, 223, 223);
+}
+
+.albumInformation {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    height: fit-content;
+    max-height: inherit;
+    flex-grow: 1;
+    flex-shrink: 1;
+    flex-basis: auto;
+    overflow: auto;
+}
+
+.albumInformation:empty {
+    display: none;
+}
+
+.albumCover {
+    align-self: center;
+    height: var(--albumCoverScaling);
+    width: var(--albumCoverScaling);
+    max-width: 300px;
+    max-height: var(--albumCoverDimensions);
+    border: 1px;
+    border-radius: 1px;
+    margin-top: 5px;
+}
+
+.albumInfoTbl {
+    align-self: center;
+    text-align: var(--tblTextAlign);
+    border-collapse: separate;
+    border-spacing: 2ch 5px; 
+    table-layout: auto;
+}
+.albumInfoTbl tr {
+    margin-top: 3px;
+    overflow: hidden;
+    border: solid;
+    border-width: 0px 1px 0px 1px;
+    border-radius: 5px;
+}
+
+.albumInfoTbl th {
+    font-weight: 600;
+    white-space: nowrap;
+    color: #0f172a;
+}
+
+.albumInfoTbl td {
+    color: #334155;
+}
+
+.tracklistHeading {
+    width: 10ch;
+}
+
+.artistList {
+    padding-inline-start: 0px;
+}
+
+.artistList li {
+    margin-bottom: var(--liMarginB);
+    padding: var(--liPadding);
+    background-color: rgb(162, 162, 162);
+    list-style-type: none;
+    cursor: pointer;
+    border: 1px;
+    border-radius: var(--liBorderRadius);
+}
+
+.artistList li:hover {
+    background-color: aqua;
+}
+
+.albumList {
+    max-width: 50vw;
+    padding-inline-start: 0px;
+    overflow-y: auto;
+}
+
+.albumList li {
+    min-width: 15ch;
+    margin-bottom: var(--liMarginB);
+    padding: var(--liPadding);
+    background-color: rgb(188, 188, 188);
+    list-style-type: none;
+    cursor: pointer;
+    border: 1px;
+    border-radius: var(--liBorderRadius);
+}
+
+.albumList li:hover {
+    background-color: aqua;
+}
+
+.trackList {
+    width: fit-content;
+}
+
+.numCol {
+    width: 3ch;
+}
+
+.titleCol {
+    padding-left: 2px;
+    width: auto;
+}
+
+.durationCol {
+    width: 7ch;
+}
+
+.tracklistTbl {
+    min-width: 300px;
+    table-layout: fixed;
+    border-collapse: collapse;
+    overflow-y: auto;
+}
+
+.tracklistTbl th, .tracklistTbl td {
+    text-align: var(--tblTextAlign);
+    
+}
+
+.tracklistTbl thead th {
+    position: sticky;
+    background-color: #fff;
+    color: black;
+    top: 0;
+    z-index: 2;
+}
+
+
+.tracklistTbl tr {
+    color: #fff;
+}
+
+.tracklistTbl tr:nth-child(even) {
+    background-color: #ee1111;
+}
+
+.tracklistTbl tr:nth-child(odd) {
+    background-color: #d05b5b;
+}
+
+.tracklistTbl td:hover {
+    background-color: rgb(225, 225, 225);
+    color: black;
+}
+
+.tracklistTbl tfoot tr {
+    color: black;
+}
+
+.tracklistTbl tfoot th, .tracklistTbl tfoot td {
+    position: sticky;
+    background-color: #fff;
+    bottom: 0;
+    z-index: 2;
+}
