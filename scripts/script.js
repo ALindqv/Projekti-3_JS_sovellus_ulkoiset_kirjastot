@@ -21,8 +21,6 @@ const artistInput = document.querySelector('.searchInput');
 const artistSearchForm = document.querySelector('.artistSearch');
 const searchBtn = document.querySelector('.searchButton');
 
-const artistList = document.querySelector('.artistList')
-
 const nullReplace = 'N/A'
 
 //#endregion
@@ -106,15 +104,30 @@ const yearFromTags = (tags) => {
 
 //#region 4. Content for artist div
 
-const createAlbumList = (artist) => {
-  getArtistAlbums(artist).then((data) => {
-    let albumData = data;
-    const albums = albumData.topalbums;
-    const albumListFrag = document.createDocumentFragment();
+//Frame for creating artist div elements with given data 
+const createArtistInfo = (artist, albums) => {
+    const artistInfoFrag = document.createDocumentFragment();
+      const artistHead = document.createElement('h1');
+          artistHead.classList.add('artistName');
+          artistHead.textContent = artist.name
+      
+
+      const artistBio = Object.assign(document.createElement('div'), {
+          id: 'artistBio',
+          textContent: artist.bio.content
+      });
+      
+      const albumListHead = document.createElement('h2')
+          albumListHead.classList.add('albumListHeading')
+          albumListHead.textContent = 'Releases'
+    
+    
+    //Create album list
+    
     const albumUl = document.createElement('ul')
         albumUl.classList.add('albumList')
     
-    albums.album.forEach(album => {
+    albums.forEach(album => {
         const albumLi = Object.assign(document.createElement('li'), {
             textContent: album.name
         })
@@ -123,38 +136,31 @@ const createAlbumList = (artist) => {
 
     //Event listener for all li elements using event delegation
     albumUl.addEventListener('click', (e) => {
-    const li = e.target.closest('.albumList > li');
-        if (!li || !albumUl.contains(li)) return; //Ignore clicks outside intended elements
-        renderAlbum(artist, li.textContent.trim())
+    const albumLi = e.target.closest('.albumList > li');
+        if (!albumLi || !albumUl.contains(albumLi)) return; //Ignore clicks outside intended elements
+        renderAlbum(artist.name, albumLi.textContent.trim())
     })
-    albumListFrag.append(albumUl)
-    artistDiv.append(albumListFrag)
-})
-}
+    artistInfoFrag.append(artistHead, artistBio, albumListHead, albumUl)
 
-//Render artist information div content
-const renderArtist = (artist) => {
-    artistDiv.textContent = '';
-    getArtistInfo(artist).then((data) => {
-      let artistData = data
-      const artistHead = document.createElement('h1');
-          artistHead.classList.add('artistName');
-          artistHead.textContent = artistData.artist.name
-      
+    return artistInfoFrag 
+    }
 
-      const artistBio = Object.assign(document.createElement('div'), {
-          id: 'artistBio',
-          textContent: artistData.artist.bio.content
-      });
-      
-      const albumListHead = document.createElement('h2')
-          albumListHead.classList.add('albumListHeading')
-          albumListHead.textContent = 'Releases'
-      
-      artistDiv.append(artistHead, artistBio, albumListHead)
-      createAlbumList(artist)
-    })
-    
+//Get artist related data and use it to create the elements
+const showArtistInfo = async (artist, targetContainer) => {
+    try {
+        const artistData = await getArtistInfo(artist);
+        const artistAlbums = await getArtistAlbums(artist)
+
+        const info = artistData?.artist
+        const albums = artistAlbums?.topalbums?.album ?? [];
+        $(targetContainer).fadeOut('fast', () => {
+            $(targetContainer).html(createArtistInfo(info, albums)).fadeIn()
+        })
+            
+    }  catch (err) {
+        console.log(err);
+        targetContainer.textContent = 'Failed to load albums'
+    }
 }
 
 //#endregion
@@ -286,19 +292,22 @@ const renderAlbum = (artist, album) => {
 //#region 6. Event Listeners
 
 //Event listener for li elements using event delegation
-artistList.addEventListener('click', (e) => {
-    const li = e.target.closest('li');
-        albumDiv.textContent = '';
-        artistDiv.textContent = '';
-        if (!li || !artistList.contains(li)) return; // Ignore clicks outside the li elements
-        renderArtist(li.textContent.trim())
+$(function() {
+    $('.artistList').on('click', (e) => {
+        const artistLi = e.target.closest('li');
+        $('.albumInformation').empty();
+        if (!artistLi || !this.contains(artistLi)) return; //Ignore clicks outside intended elements
+        showArtistInfo(artistLi.textContent.trim(), $('.artistInformation'))
+    })
 })
 
-artistSearchForm.addEventListener('submit', (e) => {
-  albumDiv.textContent = '';
-  e.preventDefault();
-  const artistValue = artistInput.value.trim(); 
-  renderArtist(artistValue)
-})
+$(function() {
+    $('.artistSearch').on('submit', (e) => {
+        $('.albumInformation').empty();
+        e.preventDefault();
+        showArtistInfo(artistInput.value.trim(), $('.artistInformation'))
+        $('.artistSearch').get(0).reset()
+    });
+});
 
 //#endregion

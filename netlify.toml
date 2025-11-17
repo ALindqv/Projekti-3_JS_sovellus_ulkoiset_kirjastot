@@ -1,5 +1,11 @@
 [build]
     functions = 'netlify/functions'
+
+[dev]
+    command = "live-server"
+    port = 8888
+    targetPort = 8080
+
 [[redirects]]
     from = '/api'
     to = '/.netlify/functions/api'

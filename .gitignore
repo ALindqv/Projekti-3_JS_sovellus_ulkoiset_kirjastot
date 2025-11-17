@@ -4,8 +4,8 @@
 
 test_data/
 index_copy.html
+
+node_modules
 # Local Netlify folder
 .netlify
 deno.lock
-package.json
-package-lock.json
