@@ -12,15 +12,8 @@
 //#region 1. Global variables
 
 //DOM elements
-const artistDiv = document.querySelector('.artistInformation');
-const albumDiv = document.querySelector('.albumInformation');
-const trackLstDiv = document.querySelector('.trackList');
-const albumLstPlaceholder = document.querySelector('#albumDivInit')
 
-const artistInput = document.querySelector('.searchInput');
-const artistSearchForm = document.querySelector('.artistSearch');
 const searchBtn = document.querySelector('.searchButton');
-
 const nullReplace = 'N/A'
 
 //#endregion
@@ -104,11 +97,11 @@ const yearFromTags = (tags) => {
 
 //#region 4. Content for artist div
 
-//Frame for creating artist div elements with given data 
+//Reusable frame for creating artist div elements with given data 
 const createArtistInfo = (artist, albums) => {
     const artistInfoFrag = document.createDocumentFragment();
       const artistHead = document.createElement('h1');
-          artistHead.classList.add('artistName');
+          $(artistHead).addClass('artistName');
           artistHead.textContent = artist.name
       
 
@@ -118,7 +111,7 @@ const createArtistInfo = (artist, albums) => {
       });
       
       const albumListHead = document.createElement('h2')
-          albumListHead.classList.add('albumListHeading')
+          $(albumListHead).addClass('albumListHeading')
           albumListHead.textContent = 'Releases'
     
     
@@ -134,12 +127,12 @@ const createArtistInfo = (artist, albums) => {
         albumUl.appendChild(albumLi)
     })
 
-    //Event listener for all li elements using event delegation
-    albumUl.addEventListener('click', (e) => {
-    const albumLi = e.target.closest('.albumList > li');
-        if (!albumLi || !albumUl.contains(albumLi)) return; //Ignore clicks outside intended elements
-        renderAlbum(artist.name, albumLi.textContent.trim())
-    })
+        //Event listener for all li elements using event delegation
+            albumUl.addEventListener('click', (e) => {
+            const albumLi = e.target.closest('.albumList > li');
+                if (!albumLi || !albumUl.contains(albumLi)) return; //Ignore clicks outside intended elements
+                showAlbumInfo(artist.name, albumLi.textContent.trim())
+            })
     artistInfoFrag.append(artistHead, artistBio, albumListHead, albumUl)
 
     return artistInfoFrag 
@@ -153,8 +146,16 @@ const showArtistInfo = async (artist, targetContainer) => {
 
         const info = artistData?.artist
         const albums = artistAlbums?.topalbums?.album ?? [];
-        $(targetContainer).fadeOut('fast', () => {
-            $(targetContainer).html(createArtistInfo(info, albums)).fadeIn()
+        
+        $(() => {
+            $(targetContainer).fadeOut('slow', () => {
+                if (!$('.albumInformation').is(':hidden')) {
+                    $('.albumInformation').empty().fadeOut('fast');
+                    $(targetContainer).slideUp('fast');
+                } else {
+                    $(targetContainer).empty().append(createArtistInfo(info, albums)).fadeIn('slow')
+                }
+            })
         })
             
     }  catch (err) {
@@ -167,68 +168,47 @@ const showArtistInfo = async (artist, targetContainer) => {
 
 //#region 5. Content for album div
 
-// Create the basic album info table
-const albumInfo = (title, value) => {
-    const row = document.createElement('tr');
-    const heading = document.createElement('th'); 
-        heading.scope = 'row';
-        heading.textContent = title;
-
-    const info = document.createElement('td');
-        info.textContent = value;
-
-    row.append(heading, info);
-    return row
-}
-
-
-const createTracklist = (artist, album) => {
-  getAlbumInfo(artist, album).then((data) => {
-  let albumData = data
-  
-    const tracks = albumData?.album?.tracks?.track;
+const createTracklist = (tracks) => {
     const tracklist = normaliseTracks(tracks)
-
     if (tracklist.length === 0) {
         const noTracks = document.createElement('p');
             noTracks.textContent = 'Tracks not available';
-            albumDiv.appendChild(noTracks);
-            return;
+            return noTracks;
     }
 
     const tbl = document.createElement('table')
     tbl.classList.add('tracklistTbl')
-
+    
+    const songListFrag = document.createDocumentFragment();
     //colgroup and col elements for the table for styling
+    
     const colGr = document.createElement('colgroup');
     const colClasses = ['numCol', 'titleCol', 'durationCol']
     colClasses.forEach(className => {
         const colElem = document.createElement('col');
-        colElem.classList.add(className);
-        colGr.appendChild(colElem)
+            $(colElem).addClass(className);
+            colGr.appendChild(colElem)
     }); tbl.appendChild(colGr)
 
-    const tHead = tbl.createTHead();
-    const tBody = tbl.createTBody();
-    const tFoot = tbl.createTFoot();
+    const [tHead, tBody, tFoot] = [tbl.createTHead(), tbl.createTBody(), tbl.createTFoot()];
 
     const slHeadRow = tHead.insertRow();
     
-    const songListFrag = document.createDocumentFragment();
+    
     ['#', 'Title', 'Duration'].forEach(label => {
-      const songListHead = document.createElement('th');
-        songListHead.scope = 'col';
-        songListHead.textContent = label;
-        songListHead.classList.add(`track${label}`);
-      songListFrag.appendChild(songListHead);
+      const songListHead = Object.assign(document.createElement('th'), {
+        scope: 'col',
+        textContent: label
+      })
+        $(songListHead).addClass(`track${label}`);
+        songListFrag.appendChild(songListHead);
     }); slHeadRow.append(songListFrag)
     
     //Looping tracks info into the table
-    
     tracklist.forEach(track => { 
-      const formattedDuration = durationFormat(track.duration)
+      const albumDuration = durationFormat(track.duration)
       const trackInfo = tBody.insertRow();
-      [track['@attr'].rank, track.name, formattedDuration].forEach(value => {
+      [track['@attr'].rank, track.name, albumDuration].forEach(value => {
         const trackData = trackInfo.insertCell();
         trackData.textContent = value;
       })
@@ -236,10 +216,11 @@ const createTracklist = (artist, album) => {
     
     //Create table footer for displaying total album runtime
     const songListFooter = tFoot.insertRow();
-    const slFooterHead = document.createElement('th');
-        slFooterHead.scope = 'row';
-        slFooterHead.colSpan = '2';
-        slFooterHead.textContent = 'Total runtime'
+    const slFooterHead = Object.assign(document.createElement('th'), {
+        scope: 'row',
+        colSpan: '2',
+        textContent: 'Total runtime'
+    })
     songListFooter.appendChild(slFooterHead)
     
     //Calculate total album runtime from duration array, starting sum at 0
@@ -247,45 +228,74 @@ const createTracklist = (artist, album) => {
 
 
     // Display runtime in the footer
-    const formattedRuntime = document.createElement('td');
-    formattedRuntime.textContent = durationFormat(total);
-    songListFooter.appendChild(formattedRuntime);
+    const albumRuntime = document.createElement('td');
+    albumRuntime.textContent = durationFormat(total);
+    songListFooter.appendChild(albumRuntime);
 
     
-    albumDiv.appendChild(tbl);
-  })
-}
+    //albumDiv.appendChild(tbl);
+    songListFrag.append(tbl)
+    return songListFrag
+  }
 
-const renderAlbum = (artist, album) => {
-  albumDiv.textContent = '';
-  getAlbumInfo(artist, album).then((data) => {
-    const albumData = data
-  
-  // Album information
-    const albumInfoTbl = document.createElement('table');
-        albumInfoTbl.classList.add('albumInfoTbl');
-  
+
+// Create the basic album info table
+const createAlbumInfo = (album) => {
+    const albumInfoFrag = document.createDocumentFragment();
+    //Album cover
     const albumCover = document.createElement('img');
-        albumCover.classList.add('albumCover');
+        $(albumCover).addClass('albumCover');
         albumCover.src = albumData.album.image[3]['#text'];
+    
+    // Album information
+    const albumInfoTbl = document.createElement('table');
+        $(albumInfoTbl).addClass('albumInfoTbl');
   
-  
-  
-  const albumInfoHeading = document.createElement('h2')
-    albumInfoHeading.classList.add('tracklistHeading');
-    albumInfoHeading.textContent = 'Tracklist';
+    //Track list title
+    const trackListHeading = document.createElement('h2')
+        $(trackListHeading).addClass('tracklistHeading');
+        trackListHeading.textContent = 'Tracklist';
 
-  //Populate info table with API data
-  albumInfoTbl.append(
-    albumInfo('Artist', albumData.album.artist),
-    albumInfo('Album', albumData.album.name),
-    albumInfo('Release', yearFromTags(albumData.album?.tags?.tag))
-  )
+        const albumInfoRows = (title, value) => {
+            const row = document.createElement('tr');
+            const heading = Object.assign(document.createElement('th'), {
+                scope: 'row',
+                textContent: title
+            }); 
+            
 
-  albumDiv.append(albumCover, albumInfoTbl, albumInfoHeading)
-  createTracklist(artist, album)
-  })
+            const info = document.createElement('td');
+                info.textContent = value;
+
+            row.append(heading, info);
+            return row
+        }
+    albumInfoTbl.append(
+        albumInfoRows('Artist', album?.artist),
+        albumInfoRows('Album', album?.name),
+        albumInfoRows('Release', yearFromTags(album?.tags?.tag))
+    )
+   albumInfoFrag.append(albumCover, albumInfoTbl, trackListHeading)
+   return albumInfoFrag
 }
+
+const showAlbumInfo = async (artist, album) => {
+    try {
+        albumData = await getAlbumInfo(artist, album)
+        const albumInfo = albumData?.album
+        const albumTracks = albumInfo?.tracks?.track;
+        
+        $(() => {
+            $('.albumInformation').slideUp(400, () => {
+                $('.albumInformation').empty().append(createAlbumInfo(albumInfo), createTracklist(albumTracks)).slideDown(400)
+            });
+        
+        })
+
+    } catch(err) {
+        console.log(err);
+    }
+  }
 
 //#endregion
 
@@ -295,7 +305,7 @@ const renderAlbum = (artist, album) => {
 $(function() {
     $('.artistList').on('click', (e) => {
         const artistLi = e.target.closest('li');
-        $('.albumInformation').empty();
+        //$('.albumInformation').empty();
         if (!artistLi || !this.contains(artistLi)) return; //Ignore clicks outside intended elements
         showArtistInfo(artistLi.textContent.trim(), $('.artistInformation'))
     })
@@ -303,7 +313,7 @@ $(function() {
 
 $(function() {
     $('.artistSearch').on('submit', (e) => {
-        $('.albumInformation').empty();
+        //$('.albumInformation').empty();
         e.preventDefault();
         showArtistInfo(artistInput.value.trim(), $('.artistInformation'))
         $('.artistSearch').get(0).reset()

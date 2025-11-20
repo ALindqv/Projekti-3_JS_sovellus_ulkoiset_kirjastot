@@ -11,9 +11,10 @@ body {
     padding: 0
 }
 
-.app {
+.container {
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
+    max-height: 96vh;
 }
 
 .search {
@@ -47,9 +48,9 @@ body {
 
 .information {
     display: flex;
-    justify-content: space-between;
+    flex-direction: inherit;
     align-self: flex-end;
-    max-height: 96vh;
+    max-height: inherit;
 }
 
 .artistInformation {
@@ -62,12 +63,11 @@ body {
     flex-grow: 0;
     flex-shrink: 0;
     flex-basis: auto;
-    overflow: auto;
-}
-
-.artistInformation:empty {
+    overflow: hidden;
     display: none;
 }
+
+
 
 #artistBio {
     padding: 5px;
@@ -91,17 +91,16 @@ body {
     flex-shrink: 1;
     flex-basis: auto;
     overflow: auto;
-}
-
-.albumInformation:empty {
     display: none;
 }
+
+
 
 .albumCover {
     align-self: center;
     height: var(--albumCoverScaling);
     width: var(--albumCoverScaling);
-    max-width: 300px;
+    max-width: 80%;
     max-height: var(--albumCoverDimensions);
     border: 1px;
     border-radius: 1px;
@@ -240,4 +239,13 @@ body {
     background-color: #fff;
     bottom: 0;
     z-index: 2;
+}
+
+@media (min-width: 1024px) {
+    .container {
+        flex-direction: row;
+    }
+    .albumCover {
+        max-width: 300px;
+    }
 }
