@@ -46,6 +46,10 @@ body {
     padding-right: 5px;
 }
 
+p {
+    margin-block-start: 0em;
+}
+
 .information {
     display: flex;
     flex-direction: inherit;
