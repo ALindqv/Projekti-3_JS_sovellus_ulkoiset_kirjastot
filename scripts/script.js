@@ -11,47 +11,55 @@
 
 //#region 1. Global variables
 
-//DOM elements
-
-const searchBtn = document.querySelector('.searchButton');
+// Cleaner display for null values
 const nullReplace = 'N/A'
 
 //#endregion
 
-//#region 2. Api requests
+//#region 2. Api request
 
-const getArtistInfo = async artist => {
-  const res = await fetch(`/api?action=artistInfo&artist=${encodeURIComponent(artist)}`);
-  if (!res.ok) throw new Error(`Artist info request error: ${res.status}`);
-  return res.json();
-}
-
-const getArtistAlbums = async artist => {
-  const res = await fetch(`/api?action=artistAlbums&artist=${encodeURIComponent(artist)}`)
-  if (!res.ok) throw new Error(`Albums request error: ${res.status}`);
-  return res.json();
-}
-
-const getAlbumInfo = async (artist, album) => {
-  const res = await fetch(`/api?action=albumInfo&artist=${encodeURIComponent(artist)}&album=${encodeURIComponent(album)}`)
-  if (!res.ok) throw new Error(`Album info request error: ${res.status}`) 
-  return res.json();
-}
-
+const getInfo = async (action, params = {}) => {
+    const res = await axios.get('/api',{params:{action, ...params}});
+    return res.data;
+} 
 
 //#endregion
 
 //#region 3. Handling data
 
+//Sanitize user-generated artist descriptions + separate text from other html elements
+const formatBio = (text) => {
+    const sanitizedText = DOMPurify.sanitize(text, {
+        //Only allow certain formatting
+        validTags: ['a','b','strong','i','em','u','span','br'],
+        validAttr: ['href','title','rel','target']
+    });
+
+    const htmlNodes = $.parseHTML(sanitizedText, document, false)
+
+    const textNodes = [];
+    const elemNodes = [];
+
+    htmlNodes.forEach(node => {
+        if (node.nodeType === Node.TEXT_NODE) {
+            const textElem = node.textContent;
+            if (textElem && textElem.trim().length) textNodes.push(textElem);
+        } else if (node.nodeType === Node.ELEMENT_NODE) {
+            elemNodes.push(node.outerHTML)
+        }
+    })
+    
+    const plainText = textNodes.join(' ').replace(/\s+/g, ' ').trim();
+    const elemTags = elemNodes.join(' ')
+    
+    return {plainText, elemTags}
+}
+ 
 //Handling single track or missing tracks albums
 const normaliseTracks = (tracks) => {
-    if (Array.isArray(tracks)) {
-        return tracks;
-    } else if (tracks == null) {
-        return [];
-    } else {
-        return [tracks];
-    }
+    return Array.isArray(tracks) ? tracks
+    : tracks == null ? []
+    : [tracks]
 }
 
 //API data for track duration is in seconds, format to look better 
@@ -99,69 +107,75 @@ const yearFromTags = (tags) => {
 
 //Reusable frame for creating artist div elements with given data 
 const createArtistInfo = (artist, albums) => {
+    let {plainText, elemTags} = formatBio(artist.bio.content)
     const artistInfoFrag = document.createDocumentFragment();
-      const artistHead = document.createElement('h1');
-          $(artistHead).addClass('artistName');
-          artistHead.textContent = artist.name
-      
+      const $artistHead = $('<h1>');
+        $artistHead.addClass('artistName')
+        $artistHead.append(artist.name);
 
-      const artistBio = Object.assign(document.createElement('div'), {
-          id: 'artistBio',
-          textContent: artist.bio.content
-      });
+    const $artistBio = $('<div>')
+    $artistBio.addClass('artistBio')
       
-      const albumListHead = document.createElement('h2')
-          $(albumListHead).addClass('albumListHeading')
-          albumListHead.textContent = 'Releases'
-    
+        const $artistText = $('<p>'); 
+            $artistText.addClass('artistPara')
+            $artistText.append(plainText)
+
+        const $artistTags = $('<div>'); 
+            $artistTags.addClass('artistTags')
+            $artistTags.append(elemTags);
+        
+        $artistBio.append($artistText, $artistTags)
+        
+    const $albumListHead = $('<h2>')
+        $albumListHead.addClass('albumListHeading')
+        $albumListHead.text('Releases')
     
     //Create album list
     
-    const albumUl = document.createElement('ul')
-        albumUl.classList.add('albumList')
+    const $albumUl = $('<ul>')
+        $albumUl.addClass('albumList')
     
     albums.forEach(album => {
-        const albumLi = Object.assign(document.createElement('li'), {
-            textContent: album.name
+        const $albumLi = $('<li>', {
+            text: album.name
         })
-        albumUl.appendChild(albumLi)
+        $albumUl.append($albumLi)
     })
 
         //Event listener for all li elements using event delegation
-            albumUl.addEventListener('click', (e) => {
+            $albumUl.on('click', (e) => {
             const albumLi = e.target.closest('.albumList > li');
-                if (!albumLi || !albumUl.contains(albumLi)) return; //Ignore clicks outside intended elements
+                //if (!albumLi || albumUl.contains(albumLi)) return; //Ignore clicks outside intended elements
                 showAlbumInfo(artist.name, albumLi.textContent.trim())
             })
-    artistInfoFrag.append(artistHead, artistBio, albumListHead, albumUl)
+
+    
+
+    artistInfoFrag.append($artistHead[0], $artistBio[0], $albumListHead[0], $albumUl[0])
 
     return artistInfoFrag 
     }
 
 //Get artist related data and use it to create the elements
 const showArtistInfo = async (artist, targetContainer) => {
-    try {
-        const artistData = await getArtistInfo(artist);
-        const artistAlbums = await getArtistAlbums(artist)
+        const artistData = await getInfo('artistInfo', {artist: artist});
+        const artistAlbums = await getInfo('artistAlbums', {artist: artist})
 
         const info = artistData?.artist
         const albums = artistAlbums?.topalbums?.album ?? [];
+
         
-        $(() => {
-            $(targetContainer).fadeOut('slow', () => {
-                if (!$('.albumInformation').is(':hidden')) {
-                    $('.albumInformation').empty().fadeOut('fast');
-                    $(targetContainer).slideUp('fast');
-                } else {
-                    $(targetContainer).empty().append(createArtistInfo(info, albums)).fadeIn('slow')
-                }
+        
+        $(function() {
+            $(targetContainer).fadeOut(700, function() {
+                $('.albumInformation').empty().fadeOut(500)
+                $(targetContainer).empty().append(createArtistInfo(info, albums))
+                .fadeIn(700, function() {
+                    $(this).css('display', 'flex')
+                })
             })
         })
-            
-    }  catch (err) {
-        console.log(err);
-        targetContainer.textContent = 'Failed to load albums'
-    }
+        
 }
 
 //#endregion
@@ -281,13 +295,16 @@ const createAlbumInfo = (album) => {
 
 const showAlbumInfo = async (artist, album) => {
     try {
-        albumData = await getAlbumInfo(artist, album)
+        albumData = await getInfo('albumInfo', {artist: artist, album: album})
         const albumInfo = albumData?.album
         const albumTracks = albumInfo?.tracks?.track;
         
-        $(() => {
-            $('.albumInformation').slideUp(400, () => {
-                $('.albumInformation').empty().append(createAlbumInfo(albumInfo), createTracklist(albumTracks)).slideDown(400)
+        $(function() {
+            $('.albumInformation').slideUp(850, function() {
+                $('.albumInformation').empty().append(createAlbumInfo(albumInfo), createTracklist(albumTracks))
+                .slideDown(850, function() {
+                    $(this).css('display', 'flex')
+                })
             });
         
         })

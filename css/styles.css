@@ -67,9 +67,7 @@ body {
     display: none;
 }
 
-
-
-#artistBio {
+.artistBio {
     padding: 5px;
     min-height: 10lh;
     height: 12lh;
@@ -93,8 +91,6 @@ body {
     overflow: auto;
     display: none;
 }
-
-
 
 .albumCover {
     align-self: center;
