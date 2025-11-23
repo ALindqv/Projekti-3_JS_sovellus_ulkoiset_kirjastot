@@ -42,6 +42,12 @@ export async function handler(event, context) {
                 urlParams.set('method', 'artist.gettopalbums');
                 urlParams.set('artist', artist);
                 break;
+            
+            case 'artistsearch':
+                urlParams.set('method', 'artist.search')
+                urlParams.set('artist', artist);
+                urlParams.set('limit', 5)
+                break
         }
 
         const url = `${baseUrl}?${String(urlParams)}`;

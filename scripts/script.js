@@ -1,11 +1,12 @@
 /**
  * Code sections
  * 1. Global variables
- * 2. Api requests
+ * 2. Api related functions
  * 3. Handling data
  * 4. Content for artist div
  * 5. Content for album div
- * 6. Event listeners
+ * 6. Search functions
+ * 7. Event listeners
  */
 
 
@@ -14,12 +15,21 @@ const nullReplace = 'N/A'; // Cleaner display for null values
 
 //#endregion
 
-//#region 2. Api request
+//#region 2. Api related functions
 
 const getInfo = async (action, params = {}) => {
     const res = await axios.get('/api',{params:{action, ...params}});
     return res.data;
 } 
+
+//Reduce excessive API calls
+const debounce = (func, delay) => {
+    let timeout;
+    return function(...args) {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func.apply(this, args), delay)
+    }
+}
 
 //#endregion
 
@@ -29,8 +39,8 @@ const getInfo = async (action, params = {}) => {
 const formatBio = (text) => {
     const sanitizedText = DOMPurify.sanitize(text, {
         //Only allow certain formatting
-        validTags: ['a','b','strong','i','em','u','span','br'],
-        validAttr: ['href','title','rel','target']
+        ALLOWED_TAGS: ['a','b','strong','i','em','u','span','br'],
+        ALLOWED_ATTR: ['href','title','rel','target']
     });
 
     const htmlNodes = $.parseHTML(sanitizedText, document, false)
@@ -107,42 +117,25 @@ const yearFromTags = (tags) => {
 //Reusable frame for creating artist div elements with given data 
 const createArtistInfo = (artist, albums) => {
     
-    
     let {plainText, elemTags} = formatBio(artist.bio.content)
-    const artistInfoFrag = document.createDocumentFragment();
-      const $artistHead = $('<h1>');
-        $artistHead.addClass('artistName')
-        $artistHead.append(artist.name);
+    const $artistInfoFrag = $(document.createDocumentFragment());
+      const $artistHead = $('<h1>', {
+        class: 'artistName',
+        text: artist.name
+      });
 
-    const $artistBio = $('<div>')
-    $artistBio.addClass('artistBio')
-      
-        const $artistText = $('<p>'); 
-            $artistText.addClass('artistPara')
-            $artistText.append(plainText)
-
-        const $artistTags = $('<div>'); 
-            $artistTags.addClass('artistTags')
-            $artistTags.append(elemTags);
-        
-        $artistBio.append($artistText, $artistTags)
-        
-    const $albumListHead = $('<h2>')
-        $albumListHead.addClass('albumListHeading')
-        $albumListHead.text('Releases')
+    const $artistBio = $('<div>', { class: 'artistBio' }).append(
+        $('<p>', { class: 'artistPara', text: plainText }), 
+        $('<div>', { class: 'artistTags', html: elemTags}) 
+    )   
+    const $albumListHead = $('<h2>', { class: 'albumListHeading', text: 'Releases' })
     
     //Create album list
-    
-    const $albumUl = $('<ul>')
-        $albumUl.addClass('albumList')
-    
-    albums.forEach(album => {
-        const $albumLi = $('<li>', {
-            text: album.name
-        })
-        $albumUl.append($albumLi)
+    const $albumUl = $('<ul>', { class: 'albumList' });
+        albums.forEach(album => {
+            $albumUl.append($('<li>', { text: album.name }))
     })
-
+    
         //Event listener for all li elements using event delegation
             $albumUl.on('click', (e) => {
             const albumLi = e.target.closest('.albumList > li');
@@ -150,11 +143,9 @@ const createArtistInfo = (artist, albums) => {
                 showAlbumInfo(artist.name, albumLi.textContent.trim())
             })
 
-    
+    $artistInfoFrag.append($artistHead, $artistBio, $albumListHead, $albumUl)
 
-    artistInfoFrag.append($artistHead[0], $artistBio[0], $albumListHead[0], $albumUl[0])
-
-    return artistInfoFrag 
+    return $artistInfoFrag 
     }
 
 //Get artist related data and use it to create the elements
@@ -166,22 +157,23 @@ const showArtistInfo = async (artist, targetContainer) => {
         const albums = artistAlbums?.topalbums?.album ?? [];
 
         
-        
-        $(function() {
-            $(targetContainer).fadeOut(700, function() {
-                $('.albumInformation').empty().fadeOut(500)
-                $(targetContainer).empty().append(createArtistInfo(info, albums))
-                .fadeIn(700, function() {
-                    $(this).css('display', 'flex') //Animation changes display to block, change it back to flex
+        (function($) {
+            $(function() {
+                $(targetContainer).fadeOut(700, function() {
+                    $('.albumInformation').empty().fadeOut(500)
+                    $(targetContainer).empty().append(createArtistInfo(info, albums))
+                    .fadeIn(700, function() {
+                        $(this).css('display', 'flex') //Animation changes display to block, change it back to flex
+                    })
                 })
-            })
-            $('.artistBio').find('.artistTags a').each(function() {
-                const href = $(this).attr('href') || '';
-                if (!/^https?:\/\//i.test(href)) $(this).removeAttr('href');
-                $(this).attr('rel', 'noopener noreferrer');
+                $('.artistBio').find('.artistTags a').each(function() {
+                        const href = $(this).attr('href') || '';
+                        if (!/^https?:\/\//i.test(href)) $(this).removeAttr('href');
+                        $(this).attr('rel', 'noopener noreferrer')
+                        $(this).attr('target', '_blank');
+                });
             });
-        })
-
+        })(jQuery)
 }
 
 //#endregion
@@ -193,7 +185,7 @@ const createTracklist = (tracks) => {
     if (tracklist.length === 0) {
         const $noTracks = $('<p>');
             $noTracks.text('Tracks not available');
-            return noTracks;
+            return $noTracks;
     }
 
     const $tbl = $('<table>');
@@ -201,7 +193,6 @@ const createTracklist = (tracks) => {
     
     const songListFrag = document.createDocumentFragment();
     //colgroup and col elements for the table for styling
-    
     const $colGr = $('<colgroup>');
     ['numCol', 'titleCol', 'durationCol'].forEach(className => {
         const $colElem = $('<col>');
@@ -219,8 +210,7 @@ const createTracklist = (tracks) => {
         scope: 'col',
         text: label,
         class: `track${label}`
-      })
-        songListFrag.append($songListHead[0]);
+      }); songListFrag.append($songListHead[0]);
     }); slHeadRow.append(songListFrag)
     
     //Looping tracks info into the table
@@ -239,16 +229,14 @@ const createTracklist = (tracks) => {
         scope: 'row',
         colSpan: '2',
         text: 'Total runtime'
-    })
-    songListFooter.append($slFooterHead[0])
+    }); songListFooter.append($slFooterHead[0])
     
     //Calculate total album runtime from duration array, starting sum at 0
     let total = tracklist.reduce((sum, track) => sum + Number(track.duration || 0), 0)
 
     // Display runtime in the footer
-    const $albumRuntime = $('<td>');
-    $albumRuntime.text(durationFormat(total));
-    songListFooter.appendChild($albumRuntime[0]);
+    const $albumRuntime = $('<td>', { text: durationFormat(total) });
+    songListFooter.append($albumRuntime[0]);
 
     
     //albumDiv.appendChild(tbl);
@@ -259,30 +247,21 @@ const createTracklist = (tracks) => {
 
 // Create the basic album info table
 const createAlbumInfo = (album) => {
-    const albumInfoFrag = document.createDocumentFragment();
+    const $albumInfoFrag = $(document.createDocumentFragment());
     //Album cover
-    const $albumCover = $('<img>');
-        $albumCover.addClass('albumCover');
-        $albumCover.attr('src', albumData.album.image[3]['#text']);
+    const $albumCover = $('<img>', { class: 'albumCover', src: albumData.album.image[3]['#text'] });
     
     // Album information
-    const $albumInfoTbl = $('<table>');
-        $albumInfoTbl.addClass('albumInfoTbl');
+    const $albumInfoTbl = $('<table>', { class: 'albumInfoTbl' });
   
     //Track list title
-    const $trackListHeading = $('<h2>');
-        $trackListHeading.addClass('tracklistHeading');
-        $trackListHeading.text('Tracklist');
+    const $trackListHeading = $('<h2>', { class: 'tracklistHeading', text: 'Tracklist' });
 
         const albumInfoRows = (title, value) => {
             const $row = $('<tr>');
-            const $heading = $('<th>', {
-                scope: 'row',
-                text: title
-            }); 
+            const $heading = $('<th>', { scope: 'row', text: title }); 
         
-            const $info = $('<td>');
-                $info.text(value);
+            const $info = $('<td>', { text: value });
 
             $row.append($heading, $info);
             return $row
@@ -292,8 +271,8 @@ const createAlbumInfo = (album) => {
         albumInfoRows('Album', album?.name),
         albumInfoRows('Release', yearFromTags(album?.tags?.tag))
     )
-   albumInfoFrag.append($albumCover[0], $albumInfoTbl[0], $trackListHeading[0])
-   return albumInfoFrag
+   $albumInfoFrag.append($albumCover, $albumInfoTbl, $trackListHeading)
+   return $albumInfoFrag
 }
 
 const showAlbumInfo = async (artist, album) => {
@@ -320,7 +299,38 @@ const showAlbumInfo = async (artist, album) => {
 
 //#endregion
 
-//#region 6. Event Listeners
+//#region 6. Search functions
+
+//Render artist search suggestions while typing
+/*const showSearchSuggestions = async () => {
+    const input = document.querySelector('.searchInput');
+    const searchQuery = input.value.trim();
+    if (searchQuery.length < 2) {
+        $('.searchSuggestions').html('');
+        return;
+    };
+
+    const artistResults = await getInfo('artistSearch', {artist: searchQuery}); 
+    const artists = artistResults.results.artistmatches.artist.map(artist => artist.name);
+
+    $('.searchSuggestions').empty();
+    artists.forEach(artist => {
+        const $suggestions = $('<div>', { text: artist });
+
+        $suggestions.on('click', (() => {
+            showArtistInfo(artist, $('.artistInformation'));
+            $('.searchSuggestions').empty();
+        }))
+        $(input).on('blur', (() => {
+            $('.searchSuggestions').empty()
+        }))
+        $('.searchSuggestions').append($suggestions)
+    })
+}*/
+
+//#endregion
+
+//#region 7. Event Listeners
 
 //Event listener for li elements using event delegation
 $(function() {
@@ -328,16 +338,16 @@ $(function() {
         const artistLi = e.target.closest('li');
         if (!artistLi || !this.contains(artistLi)) return; //Ignore clicks outside intended elements
         showArtistInfo(artistLi.textContent.trim(), $('.artistInformation'))
-    })
+    
 })
-
-$(function() {
     $('.artistSearch').on('submit', (e) => {
         e.preventDefault();
         showArtistInfo($('.searchInput').val().trim(), $('.artistInformation'))
         $('.artistSearch').get(0).reset()
         
     });
-});
+
+    //$('.artistSearch').on('input', debounce(showSearchSuggestions, 400))
+})
 
 //#endregion
