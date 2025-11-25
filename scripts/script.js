@@ -124,16 +124,21 @@ const createArtistInfo = (artist, albums) => {
         text: artist.name
       });
 
-    const $artistBio = $('<div>', { class: 'artistBio' }).append(
+    const $artistBio = $('<div>', { class: 'artistBio', id: 'artist' }).append(
         $('<p>', { class: 'artistPara', text: plainText }), 
         $('<div>', { class: 'artistTags', html: elemTags}) 
     )   
     const $albumListHead = $('<h2>', { class: 'albumListHeading', text: 'Releases' })
     
+    const $artistInfo = $('<div>', { class: '.artistInfo' }).append($artistHead, $artistBio, $albumListHead)
+
     //Create album list
     const $albumUl = $('<ul>', { class: 'albumList' });
         albums.forEach(album => {
-            $albumUl.append($('<li>', { text: album.name }))
+            const $albumLi = $('<li>').append(
+                $($('<span>', { text: album.name }))
+            )
+            $albumUl.append($albumLi)
     })
     
         //Event listener for all li elements using event delegation
@@ -143,7 +148,7 @@ const createArtistInfo = (artist, albums) => {
                 showAlbumInfo(artist.name, albumLi.textContent.trim())
             })
 
-    $artistInfoFrag.append($artistHead, $artistBio, $albumListHead, $albumUl)
+    $artistInfoFrag.append($artistInfo, $albumUl)
 
     return $artistInfoFrag 
     }
@@ -159,7 +164,7 @@ const showArtistInfo = async (artist, targetContainer) => {
         
         (function($) {
             $(function() {
-                $(targetContainer).fadeOut(700, function() {
+                (targetContainer).fadeOut(700, function() {
                     $('.albumInformation').empty().fadeOut(500)
                     $(targetContainer).empty().append(createArtistInfo(info, albums))
                     .fadeIn(700, function() {
@@ -171,7 +176,7 @@ const showArtistInfo = async (artist, targetContainer) => {
                         if (!/^https?:\/\//i.test(href)) $(this).removeAttr('href');
                         $(this).attr('rel', 'noopener noreferrer')
                         $(this).attr('target', '_blank');
-                });
+                }); 
             });
         })(jQuery)
 }
@@ -189,7 +194,8 @@ const createTracklist = (tracks) => {
     }
 
     const $tbl = $('<table>');
-    $tbl.addClass('tracklistTbl')
+    $tbl.addClass('pure-table-horizontal')
+    $tbl.attr('id', 'tracklistTbl')
     
     const songListFrag = document.createDocumentFragment();
     //colgroup and col elements for the table for styling
@@ -289,7 +295,6 @@ const showAlbumInfo = async (artist, album) => {
                     $(this).css('display', 'flex') //Animation changes display to block, change it back to flex
                 })
             });
-        
         })
 
     } catch(err) {
@@ -333,21 +338,41 @@ const showAlbumInfo = async (artist, album) => {
 //#region 7. Event Listeners
 
 //Event listener for li elements using event delegation
-$(function() {
-    $('.artistList').on('click', (e) => {
-        const artistLi = e.target.closest('li');
-        if (!artistLi || !this.contains(artistLi)) return; //Ignore clicks outside intended elements
-        showArtistInfo(artistLi.textContent.trim(), $('.artistInformation'))
-    
-})
-    $('.artistSearch').on('submit', (e) => {
-        e.preventDefault();
-        showArtistInfo($('.searchInput').val().trim(), $('.artistInformation'))
-        $('.artistSearch').get(0).reset()
+(function($) {
+    $(function() {
+        $('.artistList').on('click', (e) => {
+            const artistLi = e.target.closest('li');
+            if (!artistLi || !this.contains(artistLi)) return; //Ignore clicks outside intended elements
+            showArtistInfo(artistLi.textContent.trim(), $('.artistInformation'))
         
-    });
+        })
+        $('.artistSearch').on('submit', (e) => {
+            e.preventDefault();
+            showArtistInfo($('.searchInput').val().trim(), $('.artistInformation'))
+            $('.artistSearch').get(0).reset();
+            $('.searchInput').get(0).blur();
+            
+        });
 
-    //$('.artistSearch').on('input', debounce(showSearchSuggestions, 400))
-})
+        $('.searchInput').on('input', (() => {
+            if ($('.searchInput').val().trim() !== '') {
+                $('.searchInput').get(0).focus()
+            }
+        }));
+
+        $('.searchInput').on('focus', (() => {
+            $('.searchBtn').prop('disabled', false)
+        }));
+
+        $('.searchInput').on('blur', (() => {
+            if ($('.searchInput').val().trim() === '') {
+                $('.searchBtn').prop('disabled', true)
+            }
+            
+        }));
+
+        //$('.artistSearch').on('input', debounce(showSearchSuggestions, 400))
+    })
+})(jQuery)
 
 //#endregion

@@ -5,23 +5,43 @@
     --liPadding: 4px;
     --liMarginB: 4px;
     --liHoverBG: #B57EDC;
-    --liHoverTxt: #ffffff;
+    --liHoverTxt: #fafafa;
     --tblTextAlign: left;
 }
 
 body {
-    background-color: #fafafa;
-    padding: 0,
+    background-color: #FAFAFA;
+    padding: 5px;
 }
 
 a {
     text-decoration: none;
+    color: #8A2BE2;
+    
+}
+
+ul {
+    max-height: 94vh;
+}
+
+a:hover {
+    color: #B57EDC;
 }
 
 .container {
     display: flex;
     flex-direction: column;
-    max-height: 96vh;
+    max-height: 94vh;
+}
+
+.search {
+    position: relative;
+}
+
+.app {
+    display: flex;
+    flex-direction: column;
+    max-height: inherit;
 }
 
 .artistSearch {
@@ -30,24 +50,48 @@ a {
 }
 
 .searchInput {
-    width: 45px;
     transition: width 0.4s ease-in-out;
     background-color: rgb(203, 203, 203);
     border: none;
     border-radius: 10px 0px 0px 10px;
-    min-height: 2em;
+    width: 7.1ch;
+    min-height: 1cap;
     padding-left: 10px;
 }
 
 .searchInput:focus {
+    background-color: #98FF98;
     width: 300px;
+    outline: none;
 }
 
 .searchBtn {
     border: none;
     border-radius: 0px 15px 15px 0px;
     background-color: #B57EDC;
+    min-width: 40px;
     min-height: 20px;
+    cursor: pointer;
+}
+
+.searchIcon {
+    width: 20px;
+    height: 20px;
+    display: inline-block;
+    color: #333333;
+}
+
+.searchBtn span {
+    display: inline-block;
+    transition: transform 0.2s ease;
+}
+
+.searchBtn:active span {
+    transform: scale(0.8);
+}
+
+.searchBtn:disabled span {
+    transition: none;
 }
 
 .searchSuggestions {
@@ -68,8 +112,6 @@ a {
 .searchSuggestions div:hover {
     background-color: #f0f0f0;
 }
-
-
 
 .artists {
     align-self: flex-start;
@@ -110,7 +152,12 @@ a {
     box-sizing: border-box;
     overflow-y: auto;
     overflow-x: hidden;
-    background-color: rgb(223, 223, 223);
+    background-color: #F8F5FC;
+    border: 1px solid #D8B4E2;
+}
+
+.artistBio p {
+    color: #333333
 }
 
 .albumInformation {
@@ -171,55 +218,79 @@ a {
 }
 
 .artistList li {
-    min-width: 25ch;
+    min-width: 33ch;
     margin-bottom: var(--liMarginB);
-    padding: var(--liPadding);
-    background-color: rgb(162, 162, 162);
     list-style-type: none;
     cursor: pointer;
-    border: 1px;
+    border: none;
     border-radius: var(--liBorderRadius);
+    transition: all 0.5s;
+}
+
+.artistList li {
+    background-color: #008080;
+    color: #dddddd;
 }
 
 .artistList li:hover {
-    background-color: var(--liHoverBG);
-    color: var(--liHoverTxt);
+    background-color: #B57EDC;
 }
 
-.albumList {
+.artistList, .albumList {
+    list-style: none;
     max-width: 50vw;
     padding-inline-start: 0px;
+    overflow-x: hidden;
     overflow-y: auto;
+}
+
+.albumList li {
+    background-color: #B57EDC;
+    color: #FAFAFA
+}
+
+.albumList li:hover {
+    background-color: #008080;
 }
 
 li {
     position: relative;
-    
-}
-
-li::after {
-    content: "»";
-    position: absolute;
-    right: 0;
-    top: 50%;
-    transform: translateY(-50%);
-
-}
-
-.albumList li {
-    min-width: 15ch;
+    background-color: #008080;
+    color: #fafafa;
     margin-bottom: var(--liMarginB);
     padding: var(--liPadding);
-    background-color: rgb(188, 188, 188);
     list-style-type: none;
     cursor: pointer;
-    border: 1px;
+    border: none;
     border-radius: var(--liBorderRadius);
 }
 
-.albumList li:hover {
-    background-color: var(--liHoverBG);
-    color: var(--liHoverTxt);
+li span {
+    max-width: 70%;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    cursor: pointer;
+    display: inline-block;
+    position: relative;
+    transition: 0.5s;
+}
+
+li span:after {
+    content: '»';
+    position: absolute;
+    left: 100%;
+    opacity: 0;
+    transition: 0.5s;
+}
+
+li:hover span {
+    padding-right: 25px;
+}
+
+li:hover span:after {
+    opacity: 1;
+    right: 0;
 }
 
 .trackList {
@@ -246,11 +317,11 @@ li::after {
     overflow-y: auto;
 }
 
-.tracklistTbl th, .tracklistTbl td {
+#tracklistTbl th, #tracklistTbl td {
     text-align: var(--tblTextAlign);
 }
 
-.tracklistTbl thead th {
+#tracklistTbl thead th {
     position: sticky;
     background-color: #fff;
     color: black;
@@ -259,28 +330,28 @@ li::after {
 }
 
 
-.tracklistTbl tr {
+#tracklistTbl tr {
     color: #fafafa;
 }
 
-.tracklistTbl tr:nth-child(even) {
-    background-color: #ee1111;
+#tracklistTbl tr:nth-child(even) {
+    background-color: #008080;
 }
 
-.tracklistTbl tr:nth-child(odd) {
-    background-color: #d05b5b;
+#tracklistTbl tr:nth-child(odd) {
+    background-color: #B57EDC;
 }
 
-.tracklistTbl td:hover {
+#tracklistTbl td:hover {
     background-color: rgb(225, 225, 225);
     color: black;
 }
 
-.tracklistTbl tfoot tr {
+#tracklistTbl tfoot tr {
     color: black;
 }
 
-.tracklistTbl tfoot th, .tracklistTbl tfoot td {
+#tracklistTbl tfoot th, #tracklistTbl tfoot td {
     position: sticky;
     background-color: #fff;
     bottom: 0;
@@ -288,7 +359,7 @@ li::after {
 }
 
 @media (min-width: 1024px) {
-    .container {
+    .app {
         flex-direction: row;
     }
     .albumCover {
