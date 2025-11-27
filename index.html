@@ -4,26 +4,30 @@
         <title>MusicLore 2.0</title>
             <meta charset="utf-8" />
             <meta name="viewport" content="width=device-width", initial-scale="1.0" />
-            <link rel="stylesheet" href="css/styles.css" />
             <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/purecss@3.0.0/build/pure-min.css" 
                 integrity="sha384-X38yfunGUhNzHpBaEBsWLO+A0HDYOQi8ufWDkZ0k9e0eXz/tH3II7uKZ9msv++Ls" 
                 crossorigin="anonymous">
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+            <link rel="stylesheet" href="css/styles.css" />
     </head>
-    <body>
+    <body class="lightTheme">
         <div class="container">
-            <div class="search">
-                <form class="artistSearch">
-                    <input type="text" name="artist" class="searchInput" placeholder="Search for artist" required>
-                    <button class="searchBtn" disabled>
-                        <svg class="searchIcon" viewBox="0 0 64 64">
-                            <use dir="/assets/icons/search-icon.svg"></use>
-                        </svg>
-                    </button>
-                </form>
-            </div>
+            <div class="top">
+                <div class="search">
+                    <form class="artistSearch pure-form">
+                        <input type="text" name="artist" class="searchInput pure-input-rounded" placeholder="Search for artist" required>
+                        <button type="button" class="clearBtn" aria-label="Clear search">&times;</button>
+                        <button type="submit" class="searchBtn" disabled><i class="fa fa-search"></i></button>
+                    </form>
+                </div>
+                <label class="themeSwitch">
+                    <input type="checkbox">
+                    <span class="themeSlider round"></span>
+                </label>
+            </div> 
             <div class="app">
                 <div class="artists">
-                    <h2>Artists</h2>
+                    <h2 class="artistlistHeading">Artists</h2>
                     <ul class="artistList">
                         <li><span>Demilich</span></li>
                         <li><span>Mortiferum</span></li>
@@ -40,6 +44,7 @@
             <script src="https://cdn.jsdelivr.net/npm/dompurify@3.3.0/dist/purify.min.js "></script>
             <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
             <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+            <script src="https://cdn.jsdelivr.net/npm/simplebar@6.3.3/dist/simplebar.min.js"></script>
         <script type="text/javascript" src="scripts/script.js"></script>
     </body>
 </html>

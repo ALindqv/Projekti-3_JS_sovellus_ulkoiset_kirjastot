@@ -4,38 +4,37 @@
     --liBorderRadius: 5px;
     --liPadding: 4px;
     --liMarginB: 4px;
-    --liHoverBG: #B57EDC;
-    --liHoverTxt: #fafafa;
     --tblTextAlign: left;
+    --lightThemeHeading: #008080;
+    --drkThemeHeading: #D8B4E2;
 }
-
 body {
-    background-color: #FAFAFA;
     padding: 5px;
 }
 
-a {
-    text-decoration: none;
-    color: #8A2BE2;
-    
+.lightTheme {
+   background-color: rgba(252, 249, 253, 0.70);
+   color: #333333
 }
 
-ul {
-    max-height: 94vh;
+.darkTheme {
+    background-color: #2A1F2D;
+    color: #F8F9FA;
 }
 
-a:hover {
-    color: #B57EDC;
-}
+/* #region container etc. */
 
 .container {
     display: flex;
     flex-direction: column;
+    
     max-height: 94vh;
 }
 
-.search {
+.top {
+    display: flex;
     position: relative;
+    flex-direction: row;
 }
 
 .app {
@@ -44,40 +43,48 @@ a:hover {
     max-height: inherit;
 }
 
+/* #endregion container etc. */
+
+/* #region Search styles */
 .artistSearch {
     display: flex;
-    align-items: stretch;
+    position: relative;
+    width: 100%;
 }
 
 .searchInput {
     transition: width 0.4s ease-in-out;
-    background-color: rgb(203, 203, 203);
+    background-color: #F8F5FC;
     border: none;
-    border-radius: 10px 0px 0px 10px;
-    width: 7.1ch;
-    min-height: 1cap;
+    width: 6.3ch;
+    min-height: 2cap;
     padding-left: 10px;
 }
 
-.searchInput:focus {
-    background-color: #98FF98;
+
+.searchInput.pure-input-rounded:focus {
+    background-color: #DDA0DD;
     width: 300px;
     outline: none;
 }
 
+.searchInput::placeholder {
+    color: #333333;
+}
+
 .searchBtn {
     border: none;
-    border-radius: 0px 15px 15px 0px;
+    position: absolute;
+    right: 0;
+    border-radius: 0em 1.5em 1.5em 0em;
     background-color: #B57EDC;
+    height: 100%;
     min-width: 40px;
     min-height: 20px;
     cursor: pointer;
 }
 
-.searchIcon {
-    width: 20px;
-    height: 20px;
-    display: inline-block;
+.searchBtn:active i {
     color: #333333;
 }
 
@@ -93,6 +100,20 @@ a:hover {
 .searchBtn:disabled span {
     transition: none;
 }
+
+.clearBtn {
+    position: absolute;
+    right: 4ch;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    font-size: 1.5em;
+    cursor: pointer;
+    display: none;
+
+}
+
 
 .searchSuggestions {
     border: 1px solid #ccc;
@@ -113,10 +134,78 @@ a:hover {
     background-color: #f0f0f0;
 }
 
+/* #endregion Search styles */
+
+/* #region Theme switch styles */
+.themeSwitch {
+    position: absolute;
+    right: 10px;
+    display: inline-block;
+    width: 60px;
+    height: 34px;
+}
+
+.themeSwitch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.themeSlider {
+    position: absolute;
+    cursor: pointer;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: #ccc;
+    transition: 0.5s;
+}
+
+.themeSlider:before {
+    position: absolute;
+    content: '';
+    height: 26px;
+    width: 26px;
+    left: 4px;
+    bottom: 4px;
+    background-color: #F8F9FA;
+    transition: 0.5s;
+}
+
+input:checked + .themeSlider {
+    background-color: #B57EDC;
+}
+
+input:checked + .themeSlider:before {
+    transform: translateX(26px);
+}
+
+input:focus + .themeSlider {
+    box-shadow: 0 0 1px #B57EDC;
+}
+
+.themeSlider.round {
+    border-radius: 34px;
+
+}.themeSlider.round:before {
+    border-radius: 50%;
+}
+
+/* #endregion Theme switch styles */
+
+
+
+/* #region Artist div styles */
 .artists {
     align-self: flex-start;
     padding-right: 5px;
 }
+
+.artistlistHeading {
+    color: var(--lightThemeHeading)
+}
+
+/* #endregion Artist div styles */
+
+/* #region Artist information div styles */
 
 .artistPara {
     margin-block-start: 0em;
@@ -127,6 +216,7 @@ a:hover {
     flex-direction: inherit;
     align-self: flex-end;
     max-height: inherit;
+    overflow: hidden;
 }
 
 .artistInformation {
@@ -135,42 +225,59 @@ a:hover {
     align-self: flex-start;
     min-width: 20vw;
     max-width: 30vw;
-    max-height: inherit;
     flex-grow: 0;
     flex-shrink: 0;
     flex-basis: auto;
-    overflow: hidden;
-    display: none;
+    
+}
+
+.artistName {
+    color: var(--lightThemeHeading);
 }
 
 .artistBio {
-    padding: 5px;
+    padding: 10px;
     min-height: 10lh;
     height: 12lh;
     min-width: var(--artistInfoMinWidth);
     max-height: 40%;
     box-sizing: border-box;
-    overflow-y: auto;
-    overflow-x: hidden;
+    overflow: hidden;
     background-color: #F8F5FC;
-    border: 1px solid #D8B4E2;
+    box-shadow: 0 0 4px 2px rgba(216, 180, 226, 0.25) inset;
+    border-radius: 8px;
 }
 
 .artistBio p {
-    color: #333333
+    color: #5C5C5C;
 }
 
+.artistBio a {
+    text-decoration: none;
+    color: #8A2BE2;
+}
+
+.artistBio a:hover {
+    color: #B57EDC;
+}
+
+.albumListHeading {
+    color: var(--lightThemeHeading)
+}
+
+/* #endregion Artist information div styles */
+
+/* #region Album information div styles */
 .albumInformation {
     display: flex;
     flex-direction: column;
     min-height: 0;
-    height: fit-content;
-    max-height: inherit;
+    max-width: 94vh;
+    
     flex-grow: 1;
     flex-shrink: 1;
     flex-basis: auto;
     overflow: auto;
-    display: none;
 }
 
 .albumCover {
@@ -179,9 +286,10 @@ a:hover {
     width: var(--albumCoverScaling);
     max-width: 110px;
     max-height: var(--albumCoverDimensions);
-    border: 1px;
+    box-shadow: 0 0 4px 2px rgba(216, 180, 226, 0.25);
     border-radius: 1px;
     margin-top: 5px;
+
 }
 
 .albumInfoTbl {
@@ -202,95 +310,17 @@ a:hover {
 .albumInfoTbl th {
     font-weight: 600;
     white-space: nowrap;
-    color: #0f172a;
+    color: #4A4A4A;
 }
 
 .albumInfoTbl td {
-    color: #334155;
+    color: #5C5C5C;
 }
 
+/* #region Tracklist styles */
 .tracklistHeading {
     width: 10ch;
-}
-
-.artistList {
-    padding-inline-start: 0px;
-}
-
-.artistList li {
-    min-width: 33ch;
-    margin-bottom: var(--liMarginB);
-    list-style-type: none;
-    cursor: pointer;
-    border: none;
-    border-radius: var(--liBorderRadius);
-    transition: all 0.5s;
-}
-
-.artistList li {
-    background-color: #008080;
-    color: #dddddd;
-}
-
-.artistList li:hover {
-    background-color: #B57EDC;
-}
-
-.artistList, .albumList {
-    list-style: none;
-    max-width: 50vw;
-    padding-inline-start: 0px;
-    overflow-x: hidden;
-    overflow-y: auto;
-}
-
-.albumList li {
-    background-color: #B57EDC;
-    color: #FAFAFA
-}
-
-.albumList li:hover {
-    background-color: #008080;
-}
-
-li {
-    position: relative;
-    background-color: #008080;
-    color: #fafafa;
-    margin-bottom: var(--liMarginB);
-    padding: var(--liPadding);
-    list-style-type: none;
-    cursor: pointer;
-    border: none;
-    border-radius: var(--liBorderRadius);
-}
-
-li span {
-    max-width: 70%;
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    cursor: pointer;
-    display: inline-block;
-    position: relative;
-    transition: 0.5s;
-}
-
-li span:after {
-    content: '»';
-    position: absolute;
-    left: 100%;
-    opacity: 0;
-    transition: 0.5s;
-}
-
-li:hover span {
-    padding-right: 25px;
-}
-
-li:hover span:after {
-    opacity: 1;
-    right: 0;
+    color: var(--lightThemeHeading)
 }
 
 .trackList {
@@ -298,11 +328,10 @@ li:hover span:after {
 }
 
 .numCol {
-    width: 3ch;
+    width: 2.5ch;
 }
 
 .titleCol {
-    padding-left: 2px;
     width: auto;
 }
 
@@ -317,50 +346,196 @@ li:hover span:after {
     overflow-y: auto;
 }
 
-#tracklistTbl th, #tracklistTbl td {
+.tracklistTbl th, .tracklistTbl td {
     text-align: var(--tblTextAlign);
+    text-indent: 0.5ch;
 }
 
-#tracklistTbl thead th {
+.tracklistTbl thead th {
     position: sticky;
-    background-color: #fff;
-    color: black;
+    background-color: #DDA0DD;
+    color: #333333;
     top: 0;
     z-index: 2;
 }
 
 
-#tracklistTbl tr {
+.tracklistTbl tr {
     color: #fafafa;
 }
 
-#tracklistTbl tr:nth-child(even) {
+.tracklistTbl tr:nth-child(even) {
     background-color: #008080;
 }
 
-#tracklistTbl tr:nth-child(odd) {
+.tracklistTbl tr:nth-child(odd) {
     background-color: #B57EDC;
 }
 
-#tracklistTbl td:hover {
+.tracklistTbl td:hover {
     background-color: rgb(225, 225, 225);
     color: black;
 }
 
-#tracklistTbl tfoot tr {
+.tracklistTbl tfoot tr {
     color: black;
 }
 
-#tracklistTbl tfoot th, #tracklistTbl tfoot td {
+.tracklistTbl tfoot th, .tracklistTbl tfoot td {
     position: sticky;
-    background-color: #fff;
+    background-color: #DDA0DD;
+    color: #333333;
     bottom: 0;
     z-index: 2;
 }
 
+/* #endregion Tracklist styles */
+
+/* #endregion Album information div styles */
+
+/* #region ul + li styles */
+.artistList, .albumList {
+    list-style: none;
+    padding: 0px;
+}
+
+.artistList li {
+    min-width: 33ch;
+    background-color: #B5dc7e;
+}
+
+.artistList li:hover {
+    background-color: #DDA0DD;
+}
+
+.albumsDiv {
+    max-height: 94vh;
+}
+
+.albumList {
+    min-width: 55ch;
+    max-width: 60vw;
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+.artistList li, .albumList li {
+    display: flex;
+    justify-content: space-between;
+    transition: all 0.5s;
+    position: relative;
+    color: #F8F9FA;
+    margin-bottom: var(--liMarginB);
+    padding: var(--liPadding);
+    cursor: pointer;
+    border: none;
+    border-radius: var(--liBorderRadius);
+}
+
+.artistList li {
+    color: #4A4A4A;
+}
+
+.albumList li {
+    background-color: #B57EDC;
+}
+
+.albumList li:hover {
+    background-color: #DDA0DD;
+    color: #333333;
+}
+
+.artistList li span, .albumList li span {
+    flex: 0 0 90%;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    cursor: pointer;
+    display: inline-block;
+    position: relative;
+    transition: 0.5s;
+}
+
+.artistList li span:after, .albumList li span:after {
+    content: '»';
+    position: absolute;
+    opacity: 0;
+    right: 10px;
+    transition: 0.5s;
+}
+
+li:hover span {
+    padding-right: 25px;
+}
+
+li:hover span:after {
+    opacity: 1;
+    right: 0;
+}
+
+/* #endregion ul + li styles */
+
+
+/* #region Dark theme styles */
+
+/* Artist list */
+body.darkTheme .artistlistHeading {
+    color: var(--drkThemeHeading);
+}
+
+/* Artist description */
+body.darkTheme .artistName {
+    color: var(--drkThemeHeading)
+}
+
+body.darkTheme .albumListHeading {
+    color: var(--drkThemeHeading);
+}
+
+body.darkTheme .artistBio {
+    background-color: #423042;
+}
+
+body.darkTheme .artistBio p {
+    color: #ECECEC;
+}
+
+body.darkTheme .artistBio a {
+    text-decoration: none;
+    color: #8A2BE2;
+}
+
+body.darkTheme .artistBio a:hover {
+    color: #B57EDC;
+}
+
+body.darkTheme .tracklistHeading {
+    color: var(--drkThemeHeading)
+}
+
+/* Album info */
+body.darkTheme .albumInfoTbl th, 
+body.darkTheme .albumInfoTbl td {
+    color: #ECECEC;
+}
+
+/* #endregion Dark theme styles */
+
+/* #region @media */
 @media (min-width: 1024px) {
+    .container {
+        justify-content: space-between;
+    }
+
     .app {
         flex-direction: row;
+        gap: 25px;
+        
+    }
+
+    .information {
+        justify-content: space-between;
+        gap: inherit;
     }
     .albumCover {
         max-width: 300px;
@@ -369,3 +544,5 @@ li:hover span:after {
     min-width: 300px;
     }
 }
+
+/* #endregion @media */
