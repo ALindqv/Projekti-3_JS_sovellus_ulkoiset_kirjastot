@@ -115,18 +115,19 @@ const yearFromTags = (tags) => {
 
 //Reusable frame for creating artist div elements with given data 
 const createArtistInfo = (artist, albums) => {
-    
     let {plainText, elemTags} = formatBio(artist.bio.content)
+
     const $artistInfoFrag = $(document.createDocumentFragment());
       const $artistHead = $('<h1>', {
         class: 'artistName',
         text: artist.name
       });
-
-    const $artistBio = $('<div>', { class: 'artistBio' }).append(
-        $('<p>', { class: 'artistPara', text: plainText }), 
-        $('<div>', { class: 'artistTags', html: elemTags}) 
-    )   
+    
+    const $artistBio = $('<div>', { class: 'artistBio', id: 'artistBio' }).append(
+        $('<p>', { class: 'artistPara', text: plainText || nullReplace}),
+        $('<div>', { class: 'artistTags', html: elemTags }),
+        $('<button>', { class: 'textToggle pure-button', text: 'Read More' })
+    )
     const $albumListHead = $('<h2>', { class: 'albumListHeading', text: 'Releases' })
     
     const $artistInfo = $('<div>', { class: 'artistInfo' }).append($artistHead, $artistBio, $albumListHead)
@@ -135,19 +136,10 @@ const createArtistInfo = (artist, albums) => {
     const $albumUl = $('<ul>', { class: 'albumList' });
         albums.forEach(album => {
             const $albumLi = $('<li>').append(
-                $($('<span>', { text: album.name }))
-            )
+                $('<span>', { text: album.name }))
             $albumUl.append($albumLi)
     })
-
-    
-    
-        //Event listener for all li elements using event delegation
-            $albumUl.on('click', (e) => {
-            const albumLi = e.target.closest('.albumList > li');
-                //if (!albumLi || albumUl.contains(albumLi)) return; //Ignore clicks outside intended elements
-                showAlbumInfo(artist.name, albumLi.textContent.trim())
-            })
+        
     const $albumsDiv = $('<div>', { class: 'albumsDiv' }).append($albumUl)
 
     $artistInfoFrag.append($artistInfo, $albumsDiv)
@@ -184,7 +176,6 @@ const showArtistInfo = async (artist, targetContainer) => {
             });
         })(jQuery)
 }
-
 //#endregion
 
 //#region 5. Content for album div
@@ -306,7 +297,6 @@ const showAlbumInfo = async (artist, album) => {
         console.log(err);
     }
   }
-
 //#endregion
 
 //#region 6. Search functions
@@ -332,7 +322,6 @@ const showSearchSuggestions = async () => {
         });
     };
 };
-
 //#endregion
 
 //#region 7. Event Listeners
@@ -340,11 +329,33 @@ const showSearchSuggestions = async () => {
 //Event listener for li elements using event delegation
 (function($) {
     $(function() {
+
         $('.artistList').on('click', (e) => {
             const artistLi = e.target.closest('li');
             if (!artistLi || !this.contains(artistLi)) return; //Ignore clicks outside intended elements
             showArtistInfo(artistLi.textContent.trim(), $('.artistInformation'))    
         })
+
+        //Read More-button listener using event delegation
+        $(document).on('click', '.textToggle', () => {
+            if ($('.artistBio').hasClass('expanded')) {
+                $('.artistBio').toggleClass('expanded');
+                $('.textToggle').text('Read More');
+                $('.artistTags').hide();
+            } else {
+                $('.artistBio').toggleClass('expanded')
+                $('.textToggle').text('Read Less');
+                $('.artistTags').show();
+            }
+        })
+
+        //Event listener for all li elements using event delegation
+            $(document).on('click','.albumList li', function(e) {
+            showAlbumInfo($('.artistName').text(), $(this).text())
+            //const albumLi = e.target.closest('.albumList > li');
+                //if (!albumLi || albumUl.contains(albumLi)) return; //Ignore clicks outside intended elements
+                
+            })
 
         //Clickable search results
         $('.searchResults').on('click', (e) => {
@@ -352,7 +363,8 @@ const showSearchSuggestions = async () => {
             showArtistInfo(resultLi.textContent.trim(), $('.artistInformation'));
             $('.searchResults').empty().hide();
         });
-    
+        
+        //Keep clear button hidden unless the field has text in it
         $('.searchInput').on('input', (() => {
             if ($('.searchInput').val().trim() !== '') {
                 $('.clearBtn').show();
@@ -361,6 +373,7 @@ const showSearchSuggestions = async () => {
             }
         }));
 
+        //Enable button when search is focused
         $('.searchInput').on('focus', (() => {
             $('.searchBtn').prop('disabled', false)
         }));
@@ -393,14 +406,14 @@ const showSearchSuggestions = async () => {
 
         $('.themeSwitch input').on('change', function() {
             if(this.checked) {
-                $('.defaultTheme').addClass('darkTheme');
+                $('.lightTheme').addClass('darkTheme');
             } else {
-                $('.defaultTheme').removeClass('darkTheme')
+                $('.lightTheme').removeClass('darkTheme')
             }
-            
-        })
+
+        });
+        //Delay search suggestion API call
         $('.artistSearch').on('input', debounce(showSearchSuggestions, 475))
     })
 })(jQuery)
-
 //#endregion

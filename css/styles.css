@@ -1,11 +1,11 @@
 :root {
     --albumCoverDimensions: auto;
     --albumCoverScaling: auto;
-    --liBorderRadius: 5px;
-    --liPadding: 4px;
+    --liBorderRadius: 12px;
+    --liPadding: 10px;
     --liMarginB: 4px;
     --tblTextAlign: left;
-    --lightThemeHeading: #008080;
+    --lightThemeHeading: #5A009C;
     --drkThemeHeading: #D8B4E2;
 }
 body {
@@ -45,12 +45,13 @@ body {
 
 /* #endregion container etc. */
 
-.search {
-    position: relative;
-    
-}
+
 
 /* #region Search styles */
+
+.search {
+    position: relative;
+}
 .artistSearch {
     display: flex;
     position: relative;
@@ -236,7 +237,6 @@ input:focus + .themeSlider {
     flex-grow: 0;
     flex-shrink: 0;
     flex-basis: auto;
-    
 }
 
 .artistName {
@@ -245,15 +245,36 @@ input:focus + .themeSlider {
 
 .artistBio {
     padding: 10px;
-    min-height: 10lh;
-    height: 12lh;
+    max-height: 9lh;
     min-width: var(--artistInfoMinWidth);
-    max-height: 40%;
     box-sizing: border-box;
-    overflow: hidden;
     background-color: #F8F5FC;
     box-shadow: 0 0 4px 2px rgba(216, 180, 226, 0.25) inset;
     border-radius: 8px;
+    transition: max-height 0.5s;
+}
+
+.artistBio p {
+    display: -webkit-box;
+    overflow: hidden;
+    line-clamp: 5;
+    -webkit-line-clamp: 5;
+    -webkit-box-orient: vertical;
+    text-overflow: ellipsis;
+}
+
+
+.artistBio .artistTags {
+    display: none;
+}
+
+.artistBio.expanded {
+    max-height: fit-content;
+}
+
+.artistBio.expanded p {
+    line-clamp: unset;
+    -webkit-line-clamp: unset;
 }
 
 .artistBio p {
@@ -403,13 +424,16 @@ input:focus + .themeSlider {
 
 /* #region ul + li styles */
 .artistList, .albumList {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4em;
+    padding: 0;
     list-style: none;
-    padding: 0px;
 }
 
 .artistList li {
     min-width: 33ch;
-    background-color: #B5dc7e;
+    background-color: #B6D7A8;
 }
 
 .artistList li:hover {
@@ -433,8 +457,7 @@ input:focus + .themeSlider {
     transition: all 0.5s;
     position: relative;
     color: #F8F9FA;
-    margin-bottom: var(--liMarginB);
-    padding: var(--liPadding);
+    padding: 5px 0 5px 12px;
     cursor: pointer;
     border: none;
     border-radius: var(--liBorderRadius);
@@ -489,6 +512,10 @@ li:hover span:after {
 /* Artist list */
 body.darkTheme .artistlistHeading {
     color: var(--drkThemeHeading);
+}
+
+body.darkTheme .artistList li {
+    color: #333333
 }
 
 /* Artist description */
