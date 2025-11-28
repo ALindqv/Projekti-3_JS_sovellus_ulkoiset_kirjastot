@@ -14,7 +14,7 @@ body {
 
 .lightTheme {
    background-color: rgba(252, 249, 253, 0.70);
-   color: #333333
+   color: #4A4A4A;
 }
 
 .darkTheme {
@@ -45,6 +45,11 @@ body {
 
 /* #endregion container etc. */
 
+.search {
+    position: relative;
+    
+}
+
 /* #region Search styles */
 .artistSearch {
     display: flex;
@@ -52,7 +57,7 @@ body {
     width: 100%;
 }
 
-.searchInput {
+.searchInput.pure-input-rounded {
     transition: width 0.4s ease-in-out;
     background-color: #F8F5FC;
     border: none;
@@ -65,7 +70,7 @@ body {
 .searchInput.pure-input-rounded:focus {
     background-color: #DDA0DD;
     width: 300px;
-    outline: none;
+    border: none
 }
 
 .searchInput::placeholder {
@@ -111,26 +116,31 @@ body {
     font-size: 1.5em;
     cursor: pointer;
     display: none;
-
 }
 
 
-.searchSuggestions {
+.searchResults {
+    list-style: none;
+    top: 20px;
+    left: 15px;
+    padding: 0 0.4em 0.4em 1ch;
     border: 1px solid #ccc;
+    border-radius: 8px;
     max-height: 200px;
+    overflow-x: hidden;
     overflow-y: auto;
-    position: relative;
+    position: absolute;
     background: white;
-    width: 45px;
+    width: 100%;
+    z-index: 1000;
     display: none;
 }
 
-.searchSuggestions div {
-    padding: 8px;
+.searchResults li {
     cursor: pointer;
 }
 
-.searchSuggestions div:hover {
+.searchResults li:hover {
     background-color: #f0f0f0;
 }
 
@@ -190,8 +200,6 @@ input:focus + .themeSlider {
 }
 
 /* #endregion Theme switch styles */
-
-
 
 /* #region Artist div styles */
 .artists {

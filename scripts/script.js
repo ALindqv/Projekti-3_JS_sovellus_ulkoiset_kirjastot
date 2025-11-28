@@ -9,7 +9,6 @@
  * 7. Event listeners
  */
 
-
 //#region 1. Global variables
 const nullReplace = 'N/A'; // Cleaner display for null values
 
@@ -168,10 +167,7 @@ const showArtistInfo = async (artist, targetContainer) => {
         (function($) {
             $(function() {
                 $(targetContainer).empty().append(createArtistInfo(info, albums))
-                //(targetContainer).animate({ height: '0px', opacity: 0 }, 1200);
-
                 
-
                 $(targetContainer).css('height', 'auto')
                 let fullHeight = $(targetContainer).height();
 
@@ -315,32 +311,27 @@ const showAlbumInfo = async (artist, album) => {
 
 //#region 6. Search functions
 
-//Render artist search suggestions while typing
-/*const showSearchSuggestions = async () => {
-    const input = document.querySelector('.searchInput');
-    const searchQuery = input.value.trim();
-    if (searchQuery.length < 2) {
-        $('.searchSuggestions').html('');
+//Render artist search suggestions while user types
+const showSearchSuggestions = async () => {
+    const query = $('.searchInput').val().trim()
+    $('.searchResults').empty().hide();
+
+    if (query.length < 2) {
+        $('.searchResults').empty();
         return;
+    }
+    const searchData = await getInfo('artistSearch', {artist: query});
+
+    const filtered = searchData.results.artistmatches.artist.map(artist => artist.name);
+    if (filtered.length) {
+        $('.searchResults').show()
+        filtered.forEach(artist => {
+            $('.searchResults').append(
+                $('<li>', { text: artist })
+            ); 
+        });
     };
-
-    const artistResults = await getInfo('artistSearch', {artist: searchQuery}); 
-    const artists = artistResults.results.artistmatches.artist.map(artist => artist.name);
-
-    $('.searchSuggestions').empty();
-    artists.forEach(artist => {
-        const $suggestions = $('<div>', { text: artist });
-
-        $suggestions.on('click', (() => {
-            showArtistInfo(artist, $('.artistInformation'));
-            $('.searchSuggestions').empty();
-        }))
-        $(input).on('blur', (() => {
-            $('.searchSuggestions').empty()
-        }))
-        $('.searchSuggestions').append($suggestions)
-    })
-}*/
+};
 
 //#endregion
 
@@ -354,6 +345,13 @@ const showAlbumInfo = async (artist, album) => {
             if (!artistLi || !this.contains(artistLi)) return; //Ignore clicks outside intended elements
             showArtistInfo(artistLi.textContent.trim(), $('.artistInformation'))    
         })
+
+        //Clickable search results
+        $('.searchResults').on('click', (e) => {
+            const resultLi = e.target.closest('li');
+            showArtistInfo(resultLi.textContent.trim(), $('.artistInformation'));
+            $('.searchResults').empty().hide();
+        });
     
         $('.searchInput').on('input', (() => {
             if ($('.searchInput').val().trim() !== '') {
@@ -371,6 +369,7 @@ const showAlbumInfo = async (artist, album) => {
             //Disable search button when text input is empty
             if ($('.searchInput').val().trim() === '') {
                 $('.searchBtn').prop('disabled', true)
+                $('.searchResults').empty().hide();
             } else if ($('.searchInput').val().trim() !== '') {
                 setTimeout(() => $('.searchInput').get(0).focus(),0) //Keep search input focused as long as it has text
             }
@@ -388,6 +387,7 @@ const showAlbumInfo = async (artist, album) => {
             $('.artistSearch').get(0).reset();
             $('.searchInput').get(0).focus();
             $('.clearBtn').hide();
+            $('.searchResults').empty().hide();
 
         }))
 
@@ -399,7 +399,7 @@ const showAlbumInfo = async (artist, album) => {
             }
             
         })
-        //$('.artistSearch').on('input', debounce(showSearchSuggestions, 400))
+        $('.artistSearch').on('input', debounce(showSearchSuggestions, 475))
     })
 })(jQuery)
 
