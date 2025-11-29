@@ -245,36 +245,34 @@ input:focus + .themeSlider {
 
 .artistBio {
     padding: 10px;
-    max-height: 9lh;
     min-width: var(--artistInfoMinWidth);
-    box-sizing: border-box;
+    line-height: 1.3;
     background-color: #F8F5FC;
     box-shadow: 0 0 4px 2px rgba(216, 180, 226, 0.25) inset;
     border-radius: 8px;
-    transition: max-height 0.5s;
+    
 }
 
-.artistBio p {
-    display: -webkit-box;
+.artistPara {
     overflow: hidden;
-    line-clamp: 5;
-    -webkit-line-clamp: 5;
-    -webkit-box-orient: vertical;
-    text-overflow: ellipsis;
+    transition: max-height 0.5s ease;
+    position: relative;
+    overflow-wrap: anywhere;
 }
 
+/* Fade-out on element when collapsed */
+.artistPara::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; height: 2.1em;
+    width: 100%;
+    pointer-events: none;
+    background: linear-gradient(to bottom,
+    rgba(255, 255, 255, 0), rgba(255,255,255,1));
+}
 
-.artistBio .artistTags {
+.artistPara.expanded::after {
     display: none;
-}
-
-.artistBio.expanded {
-    max-height: fit-content;
-}
-
-.artistBio.expanded p {
-    line-clamp: unset;
-    -webkit-line-clamp: unset;
 }
 
 .artistBio p {

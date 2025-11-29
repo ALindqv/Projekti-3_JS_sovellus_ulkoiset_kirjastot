@@ -11,7 +11,6 @@
 
 //#region 1. Global variables
 const nullReplace = 'N/A'; // Cleaner display for null values
-
 //#endregion
 
 //#region 2. Api related functions
@@ -63,6 +62,18 @@ const formatBio = (text) => {
     return {plainText, elemTags}
 }
  
+const truncateBio = (text, maxWords) => {
+    const words = text.trim().split(/\s+/);
+    if (words.length <= maxWords) {
+        return { truncated: text.trim(), full: text.trim(), isTruncated: false };
+    }
+    return {
+        truncated: words.slice(0, maxWords).join(' ') + '...',
+        full: words.join(' '),
+        isTruncated: true
+    };
+}
+
 //Handling single track or missing tracks albums
 const normaliseTracks = (tracks) => {
     return Array.isArray(tracks) ? tracks
@@ -163,17 +174,84 @@ const showArtistInfo = async (artist, targetContainer) => {
                 $(targetContainer).css('height', 'auto')
                 let fullHeight = $(targetContainer).height();
 
-                $(targetContainer).css('height', '0px').animate({ height: fullHeight + 'px', opacity: 1 }, 1200, (() => {
+                //Animate artist div 
+                $(targetContainer).css('height', '0px').animate({ height: fullHeight + 'px', opacity: 1 }, 1200, () => {
                     $(targetContainer).css('height', 'auto')
-                }))
+                });
 
+                //Ensure safe links in bio
                 $('.artistBio').find('.artistTags a').each(function() {
                         const href = $(this).attr('href') || '';
                         if (!/^https?:\/\//i.test(href)) $(this).removeAttr('href');
-                        $(this).attr('rel', 'noopener noreferrer')
-                        $(this).attr('target', '_blank');
+                        $(this).attr('rel', 'noopener noreferrer').attr('target', '_blank');
                 }); 
+            
+
+            //Initialize read more/read less
+            const $bio = $('.artistBio');
+            const $para = $bio.find('.artistPara');
+            const $btn = $bio.find('.textToggle')
+
+            const maxWordCount = 65;
+
+            //Ensure layout is ready
+            requestAnimationFrame(() => {
+                const fullText = $para.text()
+                const { truncated, full, isTruncated } = truncateBio(fullText, maxWordCount) 
+            
+
+                //Show full text + hide button if no need to truncate
+                if (!isTruncated) {
+                    $btn.hide()
+                    $para.addClass('expanded').css('max-height', 'none'); //Remove bio height limit
+                    return;
+                }
+
+                //Set truncated text at collapsed bio height
+                $para.text(truncated);
+
+                const collapsedHeight = $para[0].scrollHeight;
+                $para.css('max-height', collapsedHeight + 'px');
+
+                let expanded = false;
+
+                $btn.text('Read More').attr('aria-expanded', 'false')
+
+                $btn.on('click', () => {
+                    if (expanded) {
+                        //Collapse bio
+                        $para.removeClass('expanded').text(truncated);
+
+                        //Measure truncated height
+                        const height = $para[0].scrollHeight;
+                        $para.css('max-height', height + 'px');
+
+                        $btn.text('Read More').attr('aria-expanded', 'false');
+                        expanded = false;
+                    } else {
+                        //Expand bio to full
+                        $para.addClass('expanded').text(full);
+
+                        //Measure full height + animate with css transition
+                        const height = $para[0].scrollHeight;
+                        $para.css('max-height', height + 'px')
+
+                        $btn.text('Read Less').attr('aria-expanded', 'true');
+                        expanded = true;
+                    } 
+                });
+
+                let resizeTimer;
+                $(window).on('resize', () => {
+                    clearTimeout(resizeTimer);
+                    resizeTimer = setTimeout(() => {
+                        const height = $para[0].scrollHeight;
+                        $para.css('max-height', height + 'px');
+                    }, 120)
+                });
             });
+
+        });
         })(jQuery)
 }
 //#endregion
@@ -325,7 +403,6 @@ const showSearchSuggestions = async () => {
 //#endregion
 
 //#region 7. Event Listeners
-
 //Event listener for li elements using event delegation
 (function($) {
     $(function() {
@@ -334,19 +411,6 @@ const showSearchSuggestions = async () => {
             const artistLi = e.target.closest('li');
             if (!artistLi || !this.contains(artistLi)) return; //Ignore clicks outside intended elements
             showArtistInfo(artistLi.textContent.trim(), $('.artistInformation'))    
-        })
-
-        //Read More-button listener using event delegation
-        $(document).on('click', '.textToggle', () => {
-            if ($('.artistBio').hasClass('expanded')) {
-                $('.artistBio').toggleClass('expanded');
-                $('.textToggle').text('Read More');
-                $('.artistTags').hide();
-            } else {
-                $('.artistBio').toggleClass('expanded')
-                $('.textToggle').text('Read Less');
-                $('.artistTags').show();
-            }
         })
 
         //Event listener for all li elements using event delegation
