@@ -10,6 +10,14 @@
  */
 
 //#region 1. Global variables
+
+const { 
+  OverlayScrollbars, 
+  ScrollbarsHidingPlugin, 
+  SizeObserverPlugin, 
+  ClickScrollPlugin  
+} = OverlayScrollbarsGlobal;
+
 const nullReplace = 'N/A'; // Cleaner display for null values
 //#endregion
 
@@ -134,7 +142,7 @@ const createArtistInfo = (artist, albums) => {
         text: artist.name
       });
     
-    const $artistBio = $('<div>', { class: 'artistBio', id: 'artistBio' }).append(
+    const $artistBio = $('<div>', { class: 'artistBio' }).append(
         $('<p>', { class: 'artistPara', text: plainText || nullReplace}),
         $('<div>', { class: 'artistTags', html: elemTags }),
         $('<button>', { class: 'textToggle pure-button', text: 'Read More' })
@@ -150,9 +158,9 @@ const createArtistInfo = (artist, albums) => {
                 $('<span>', { text: album.name }))
             $albumUl.append($albumLi)
     })
+    
         
     const $albumsDiv = $('<div>', { class: 'albumsDiv' }).append($albumUl)
-
     $artistInfoFrag.append($artistInfo, $albumsDiv)
 
     return $artistInfoFrag 

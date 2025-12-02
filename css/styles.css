@@ -1,6 +1,4 @@
 :root {
-    --albumCoverDimensions: auto;
-    --albumCoverScaling: auto;
     --liBorderRadius: 12px;
     --liPadding: 10px;
     --liMarginB: 4px;
@@ -27,7 +25,6 @@ body {
 .container {
     display: flex;
     flex-direction: column;
-    
     max-height: 94vh;
 }
 
@@ -44,8 +41,6 @@ body {
 }
 
 /* #endregion container etc. */
-
-
 
 /* #region Search styles */
 
@@ -171,8 +166,8 @@ body {
 }
 
 .themeSlider:before {
-    position: absolute;
     content: '';
+    position: absolute;
     height: 26px;
     width: 26px;
     left: 4px;
@@ -216,10 +211,6 @@ input:focus + .themeSlider {
 
 /* #region Artist information div styles */
 
-.artistPara {
-    margin-block-start: 0em;
-}
-
 .information {
     display: flex;
     flex-direction: inherit;
@@ -230,10 +221,11 @@ input:focus + .themeSlider {
 
 .artistInformation {
     display: flex;
+    max-height: inherit;
     flex-direction: column;
     align-self: flex-start;
     min-width: 20vw;
-    max-width: 30vw;
+    max-width: 28.3vw;
     flex-grow: 0;
     flex-shrink: 0;
     flex-basis: auto;
@@ -244,9 +236,10 @@ input:focus + .themeSlider {
 }
 
 .artistBio {
-    padding: 10px;
-    min-width: var(--artistInfoMinWidth);
+    display: flex;
+    flex-direction: column;
     line-height: 1.3;
+    padding: 0 0 15px 0;
     background-color: #F8F5FC;
     box-shadow: 0 0 4px 2px rgba(216, 180, 226, 0.25) inset;
     border-radius: 8px;
@@ -254,21 +247,36 @@ input:focus + .themeSlider {
 }
 
 .artistPara {
+    padding: 10px 1.3ch 5px 1.3ch;
     overflow: hidden;
     transition: max-height 0.5s ease;
     position: relative;
     overflow-wrap: anywhere;
+    will-change: max-height;
+    margin: 0;
 }
 
 /* Fade-out on element when collapsed */
 .artistPara::after {
     content: '';
     position: absolute;
-    bottom: 0; left: 0; height: 2.1em;
+    bottom: 0; left: 0; height: 1.9em;
     width: 100%;
     pointer-events: none;
     background: linear-gradient(to bottom,
-    rgba(255, 255, 255, 0), rgba(255,255,255,1));
+    rgba(200, 125, 255, 0), rgba(200,120,255,1));
+}
+
+.artistTags {
+    padding: 5px 0 5px 10px
+}
+
+.textToggle.pure-button {
+    border: none;
+    border-radius: 15px;
+    background-color: #B57EDC;
+    align-self: center;
+    left: 10px;
 }
 
 .artistPara.expanded::after {
@@ -292,6 +300,11 @@ input:focus + .themeSlider {
     color: var(--lightThemeHeading)
 }
 
+.albumsDiv {
+    overflow: auto;
+
+}
+
 /* #endregion Artist information div styles */
 
 /* #region Album information div styles */
@@ -300,7 +313,6 @@ input:focus + .themeSlider {
     flex-direction: column;
     min-height: 0;
     max-width: 94vh;
-    
     flex-grow: 1;
     flex-shrink: 1;
     flex-basis: auto;
@@ -309,8 +321,8 @@ input:focus + .themeSlider {
 
 .albumCover {
     align-self: center;
-    height: var(--albumCoverScaling);
-    width: var(--albumCoverScaling);
+    height: auto;
+    width: auto;
     max-width: 110px;
     max-height: var(--albumCoverDimensions);
     box-shadow: 0 0 4px 2px rgba(216, 180, 226, 0.25);
@@ -329,6 +341,7 @@ input:focus + .themeSlider {
 .albumInfoTbl tr {
     margin-top: 3px;
     overflow: hidden;
+    white-space: nowrap;
     border: solid;
     border-width: 0px 1px 0px 1px;
     border-radius: 5px;
@@ -336,7 +349,6 @@ input:focus + .themeSlider {
 
 .albumInfoTbl th {
     font-weight: 600;
-    white-space: nowrap;
     color: #4A4A4A;
 }
 
@@ -370,12 +382,17 @@ input:focus + .themeSlider {
     min-width: 110px;
     table-layout: fixed;
     border-collapse: collapse;
-    overflow-y: auto;
+    border: none;
+    border-radius: 10px;
 }
 
 .tracklistTbl th, .tracklistTbl td {
     text-align: var(--tblTextAlign);
     text-indent: 0.5ch;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 70ch;
 }
 
 .tracklistTbl thead th {
@@ -392,16 +409,16 @@ input:focus + .themeSlider {
 }
 
 .tracklistTbl tr:nth-child(even) {
-    background-color: #008080;
+    background-color: rgba(0, 128, 128, 0.9);
 }
 
 .tracklistTbl tr:nth-child(odd) {
-    background-color: #B57EDC;
+    background-color: rgba(181, 126, 220, 0.85);
 }
 
 .tracklistTbl td:hover {
     background-color: rgb(225, 225, 225);
-    color: black;
+    color: #333333;
 }
 
 .tracklistTbl tfoot tr {
@@ -424,22 +441,19 @@ input:focus + .themeSlider {
 .artistList, .albumList {
     display: flex;
     flex-direction: column;
-    gap: 0.4em;
+    gap: 0.45em;
     padding: 0;
     list-style: none;
 }
 
 .artistList li {
     min-width: 33ch;
-    background-color: #B6D7A8;
+    background-color: #008080;
+    
 }
 
 .artistList li:hover {
     background-color: #DDA0DD;
-}
-
-.albumsDiv {
-    max-height: 94vh;
 }
 
 .albumList {
@@ -503,7 +517,6 @@ li:hover span:after {
 }
 
 /* #endregion ul + li styles */
-
 
 /* #region Dark theme styles */
 
