@@ -132,21 +132,55 @@ const yearFromTags = (tags) => {
 
 //#region 4. Content for artist div
 
+//Create artist bio 
+const createArtistBio = ($target, fullText, minText) => {
+    const $wrapper = $('<div>', { class: 'bioWrapper' });
+
+    const $para = $('<p>', { class: 'artistPara', text: minText });
+
+    //Create button, render bio according to data attributes on the button
+    const $toggleBtn = $('<button>', { class: 'textToggle pure-button', text: 'Read More', 'aria-expanded': 'false' })
+    .attr('data-more', fullText)
+    .attr('data-less', minText);
+
+    //Measure minimized bio height
+    $para.css({ overflow: 'hidden', transition: 'max-height 0.5s ease' });
+
+    requestAnimationFrame(() => {
+        const bioHeight = $para[0].scrollHeight;
+        $para.css('max-height', bioHeight + 'px');
+    });
+
+    $wrapper.append($para, $toggleBtn);
+    $target.append($wrapper);
+}
+
+
 //Reusable frame for creating artist div elements with given data 
 const createArtistInfo = (artist, albums) => {
     let {plainText, elemTags} = formatBio(artist.bio.content)
 
     const $artistInfoFrag = $(document.createDocumentFragment());
-      const $artistHead = $('<h1>', {
-        class: 'artistName',
-        text: artist.name
-      });
+      const $artistHead = $('<h1>', { class: 'artistName', text: artist.name });
     
-    const $artistBio = $('<div>', { class: 'artistBio' }).append(
-        $('<p>', { class: 'artistPara', text: plainText || nullReplace}),
-        $('<div>', { class: 'artistTags', html: elemTags }),
-        $('<button>', { class: 'textToggle pure-button', text: 'Read More' })
-    )
+    //Initiate artist bio container
+    const $artistBio = $('<div>', { class: 'artistBio' })
+
+    //Either full or truncated bio
+    const fullText = plainText || nullReplace;
+    const maxWordCount = 40;
+    const words = fullText.trim().split(/\s+/); 
+
+    const minText = words.length > maxWordCount
+    ? words.slice(0, maxWordCount).join(' ') + '...'
+    : fullText
+
+    //Add text paragraph and text toggle button first
+    createArtistBio($artistBio, fullText, minText)
+
+    //Finalize bio with links
+    $artistBio.append($('<div>', { class: 'artistTags', html: elemTags }))
+    
     const $albumListHead = $('<h2>', { class: 'albumListHeading', text: 'Releases' })
     
     const $artistInfo = $('<div>', { class: 'artistInfo' }).append($artistHead, $artistBio, $albumListHead)
@@ -159,7 +193,6 @@ const createArtistInfo = (artist, albums) => {
             $albumUl.append($albumLi)
     })
     
-        
     const $albumsDiv = $('<div>', { class: 'albumsDiv' }).append($albumUl)
     $artistInfoFrag.append($artistInfo, $albumsDiv)
 
@@ -193,72 +226,6 @@ const showArtistInfo = async (artist, targetContainer) => {
                         if (!/^https?:\/\//i.test(href)) $(this).removeAttr('href');
                         $(this).attr('rel', 'noopener noreferrer').attr('target', '_blank');
                 }); 
-            
-
-            //Initialize read more/read less
-            const $bio = $('.artistBio');
-            const $para = $bio.find('.artistPara');
-            const $btn = $bio.find('.textToggle')
-
-            const maxWordCount = 65;
-
-            //Ensure layout is ready
-            requestAnimationFrame(() => {
-                const fullText = $para.text()
-                const { truncated, full, isTruncated } = truncateBio(fullText, maxWordCount) 
-            
-
-                //Show full text + hide button if no need to truncate
-                if (!isTruncated) {
-                    $btn.hide()
-                    $para.addClass('expanded').css('max-height', 'none'); //Remove bio height limit
-                    return;
-                }
-
-                //Set truncated text at collapsed bio height
-                $para.text(truncated);
-
-                const collapsedHeight = $para[0].scrollHeight;
-                $para.css('max-height', collapsedHeight + 'px');
-
-                let expanded = false;
-
-                $btn.text('Read More').attr('aria-expanded', 'false')
-
-                $btn.on('click', () => {
-                    if (expanded) {
-                        //Collapse bio
-                        $para.removeClass('expanded').text(truncated);
-
-                        //Measure truncated height
-                        const height = $para[0].scrollHeight;
-                        $para.css('max-height', height + 'px');
-
-                        $btn.text('Read More').attr('aria-expanded', 'false');
-                        expanded = false;
-                    } else {
-                        //Expand bio to full
-                        $para.addClass('expanded').text(full);
-
-                        //Measure full height + animate with css transition
-                        const height = $para[0].scrollHeight;
-                        $para.css('max-height', height + 'px')
-
-                        $btn.text('Read Less').attr('aria-expanded', 'true');
-                        expanded = true;
-                    } 
-                });
-
-                let resizeTimer;
-                $(window).on('resize', () => {
-                    clearTimeout(resizeTimer);
-                    resizeTimer = setTimeout(() => {
-                        const height = $para[0].scrollHeight;
-                        $para.css('max-height', height + 'px');
-                    }, 120)
-                });
-            });
-
         });
         })(jQuery)
 }
@@ -305,17 +272,22 @@ const createTracklist = (tracks) => {
       const trackInfo = tBody.insertRow();
       [track['@attr'].rank, track.name, albumDuration].forEach(value => {
         const trackData = trackInfo.insertCell();
-        trackData.textContent = value;
+
+        //Text scroll for overflowing text
+        const scrollSpan = document.createElement('span');
+        scrollSpan.classList.add('scrollText');
+        scrollSpan.textContent = value;
+
+        trackData.append(scrollSpan);
+        trackData.classList.add('scrollCell');
+
       })
     })
     
     //Create table footer for displaying total album runtime
     const songListFooter = tFoot.insertRow();
-    const $slFooterHead = $('<th>', {
-        scope: 'row',
-        colSpan: '2',
-        text: 'Total runtime'
-    }); songListFooter.append($slFooterHead[0])
+    const $slFooterHead = $('<th>', { scope: 'row', colSpan: '2', text: 'Total runtime' }); 
+    songListFooter.append($slFooterHead[0])
     
     //Calculate total album runtime from duration array, starting sum at 0
     let total = tracklist.reduce((sum, track) => sum + Number(track.duration || 0), 0)
@@ -411,81 +383,129 @@ const showSearchSuggestions = async () => {
 //#endregion
 
 //#region 7. Event Listeners
-//Event listener for li elements using event delegation
 (function($) {
     $(function() {
+        //#region 7.1 Search listeners
 
-        $('.artistList').on('click', (e) => {
-            const artistLi = e.target.closest('li');
-            if (!artistLi || !this.contains(artistLi)) return; //Ignore clicks outside intended elements
-            showArtistInfo(artistLi.textContent.trim(), $('.artistInformation'))    
-        })
-
-        //Event listener for all li elements using event delegation
-            $(document).on('click','.albumList li', function(e) {
-            showAlbumInfo($('.artistName').text(), $(this).text())
-            //const albumLi = e.target.closest('.albumList > li');
-                //if (!albumLi || albumUl.contains(albumLi)) return; //Ignore clicks outside intended elements
-                
-            })
-
-        //Clickable search results
-        $('.searchResults').on('click', (e) => {
-            const resultLi = e.target.closest('li');
-            showArtistInfo(resultLi.textContent.trim(), $('.artistInformation'));
-            $('.searchResults').empty().hide();
-        });
-        
-        //Keep clear button hidden unless the field has text in it
-        $('.searchInput').on('input', (() => {
-            if ($('.searchInput').val().trim() !== '') {
-                $('.clearBtn').show();
-            } else {
-                $('.clearBtn').hide();
-            }
-        }));
-
-        //Enable button when search is focused
-        $('.searchInput').on('focus', (() => {
-            $('.searchBtn').prop('disabled', false)
-        }));
-
-        $('.searchInput').on('blur', (() => {
-            //Disable search button when text input is empty
-            if ($('.searchInput').val().trim() === '') {
-                $('.searchBtn').prop('disabled', true)
+            //Clickable search results
+            $('.searchResults').on('click', (e) => {
+                const resultLi = e.target.closest('li');
+                showArtistInfo(resultLi.textContent.trim(), $('.artistInformation'));
                 $('.searchResults').empty().hide();
-            } else if ($('.searchInput').val().trim() !== '') {
-                setTimeout(() => $('.searchInput').get(0).focus(),0) //Keep search input focused as long as it has text
-            }
+            });
             
-        }));
-        $('.artistSearch').on('submit', (e) => {
-            e.preventDefault();
-            showArtistInfo($('.searchInput').val().trim(), $('.artistInformation'))
-            $('.artistSearch').get(0).reset();
-            $('.searchInput').get(0).blur();
-            
-        });
+            //Keep clear button hidden unless the field has text in it
+            $('.searchInput').on('input', (() => {
+                if ($('.searchInput').val().trim() !== '') {
+                    $('.clearBtn').show();
+                } else {
+                    $('.clearBtn').hide();
+                }
+            }));
 
-        $('.clearBtn').on('click', (() => {
-            $('.artistSearch').get(0).reset();
-            $('.searchInput').get(0).focus();
-            $('.clearBtn').hide();
-            $('.searchResults').empty().hide();
 
-        }))
 
-        $('.themeSwitch input').on('change', function() {
-            if(this.checked) {
-                $('.lightTheme').addClass('darkTheme');
+            //Enable button when search is focused
+            $('.searchInput').on('focus', (() => {
+                $('.searchBtn').prop('disabled', false)
+            }));
+
+            $('.searchInput').on('blur', (() => {
+                //Disable search button when text input is empty
+                if ($('.searchInput').val().trim() === '') {
+                    $('.searchBtn').prop('disabled', true)
+                    $('.searchResults').empty().hide();
+                } else if ($('.searchInput').val().trim() !== '') {
+                    setTimeout(() => $('.searchInput').get(0).focus(),0) //Keep search input focused as long as it has text
+                }
+                
+            }));
+            $('.artistSearch').on('submit', (e) => {
+                e.preventDefault();
+                showArtistInfo($('.searchInput').val().trim(), $('.artistInformation'))
+                $('.artistSearch').get(0).reset();
+                $('.searchInput').get(0).blur();
+                
+            });
+
+            $('.clearBtn').on('click', (() => {
+                $('.artistSearch').get(0).reset();
+                $('.searchInput').get(0).focus();
+                $('.clearBtn').hide();
+                $('.searchResults').empty().hide();
+
+            }))
+
+            $('.themeSwitch input').on('change', function() {
+                if(this.checked) {
+                    $('.lightTheme').addClass('darkTheme');
+                } else {
+                    $('.lightTheme').removeClass('darkTheme')
+                }
+
+            });
+            //Delay search suggestion API call
+            $('.artistSearch').on('input', debounce(showSearchSuggestions, 475))
+
+        //#endregion
+
+        //#region 7.2 Read more/read less listener
+        $(document).on('click', '.textToggle', function() {
+            const $btn = $(this);
+            const $wrapper = $btn.closest('.bioWrapper')
+            const $para = $wrapper.find('.artistPara')
+
+            const fullText = $btn.attr('data-more');
+            const truncatedText = $btn.attr('data-less');
+
+            const expanded = $btn.attr('aria-expanded') === 'true';
+
+            if (expanded) {
+                $para.removeClass('expanded').text(truncatedText);
+                $para.css('max-height', $para[0].scrollHeight + 'px');
+                $btn.text('Read More').attr('aria-expanded', 'false');
             } else {
-                $('.lightTheme').removeClass('darkTheme')
-            }
+                $para.addClass('expanded').text(fullText);
+                $para.css('max-height', $para[0].scrollHeight + 'px');
+                $btn.text('Read Less').attr('aria-expanded', 'true');
+            };
 
-        });
-        //Delay search suggestion API call
-        $('.artistSearch').on('input', debounce(showSearchSuggestions, 475))
+        })
+        //#endregion
+
+        //#region 7.3 ul + li listeners
+
+            //Artistlist
+            $(document).on('click','.artistList li', function(e)  {
+                showArtistInfo($(this).text(), $('.artistInformation')) 
+                //const artistLi = e.target.closest('li');
+                //if (!artistLi || !this.contains(artistLi)) return; //Ignore clicks outside intended elements
+                    
+            })
+            //Albumlist
+            $(document).on('click','.albumList li', function(e) {
+                showAlbumInfo($('.artistName').text(), $(this).text())
+                //const albumLi = e.target.closest('.albumList > li');
+                    //if (!albumLi || albumUl.contains(albumLi)) return; //Ignore clicks outside intended elements
+                    
+            })
+        //#endregion
+
+        //#region 7.4 Artist & Album information listeners
+        /*
+            //Tracklist table text overflow scroll control
+                $('.scroll-cell').hover(function() {
+                    const $span = $(this).find('.scrollText');
+                    $span.css('animation', 'none'); //Stop animation
+                    $span[0].offsetHeight;
+                    $span.css({ 'animation': 'scroll-left 7s linear infinite;', 'animation-play-state': 'running' });
+                },
+                    function() {
+                        const $span = $(this).find('.scrollText');
+                        $span.css({ 'animation-play-state': 'paused', 'transform': 'translateX(-175%)' });
+                    }
+                )*/
+        //#endregion
     })
 })(jQuery)
 //#endregion

@@ -46,7 +46,7 @@ export async function handler(event, context) {
             case 'artistsearch':
                 urlParams.set('method', 'artist.search')
                 urlParams.set('artist', artist);
-                urlParams.set('limit', 5)
+                urlParams.set('limit', 10)
                 break
         }
 
