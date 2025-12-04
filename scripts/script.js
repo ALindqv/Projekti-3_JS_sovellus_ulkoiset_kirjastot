@@ -210,6 +210,11 @@ const showArtistInfo = async (artist, targetContainer) => {
         
         (function($) {
             $(function() {
+                //Clear current album information on artist switch
+                if (!$('.albumInformation').is(':empty')) {
+                    $('.albumInformation').empty();
+                }
+
                 $(targetContainer).empty().append(createArtistInfo(info, albums))
                 
                 $(targetContainer).css('height', 'auto')
@@ -236,70 +241,53 @@ const showArtistInfo = async (artist, targetContainer) => {
 const createTracklist = (tracks) => {
     const tracklist = normaliseTracks(tracks)
     if (tracklist.length === 0) {
-        const $noTracks = $('<p>');
-            $noTracks.text('Tracks not available');
+        const $noTracks = $('<p>', { text: 'Tracks not available' });
             return $noTracks;
     }
+    const $tracklistFrag = $(document.createDocumentFragment());
+        
+        const $tbl = $('<table>', { class: 'tracklistTbl pure-table-horizontal' });
+        //colgroup and col elements for the table for styling
+        const $colGr = $('<colgroup>');
+        
+        //Col elements to help sizing columns cleanly
+        $(['numCol', 'titleCol', 'durationCol']).each((_, className) => {
+            $('<col>', { class: className }).appendTo($colGr);
+        }); $tbl.append($colGr)
 
-    const $tbl = $('<table>');
-    $tbl.addClass('tracklistTbl pure-table-horizontal')
-    
-    const songListFrag = document.createDocumentFragment();
-    //colgroup and col elements for the table for styling
-    const $colGr = $('<colgroup>');
-    ['numCol', 'titleCol', 'durationCol'].forEach(className => {
-        const $colElem = $('<col>');
-            $colElem.addClass(className);
-            $colGr.append($colElem)
-    }); $tbl.append($colGr)
+        
+        const $tHead = $('<thead>').appendTo($tbl);
+        const $tBody = $('<tbody>').appendTo($tbl);
+        const $tFoot = $('<tfoot>').appendTo($tbl);
 
-    const tbl = $tbl[0]
-    const [tHead, tBody, tFoot] = [tbl.createTHead(), tbl.createTBody(), tbl.createTFoot()];
+        //Title row
+        const $headRow = $('<tr>').appendTo($tHead)
+        $(['#', 'Title', 'Duration']).each((_, label) => {
+            $('<th>', { scope: 'col', text: label, class: `track${label}` }).appendTo($headRow)
+            //$headRow.append($trackHead); //.appendTo($tracklistFrag) //Maybe add [0]
+        }); 
+        
+        //$HeadRow.append(songListFrag)
+        
+        //Looping tracks info into the table
+        $(tracklist).each((_, track) => { 
+            const albumDuration = durationFormat(track.duration);
+            const $trackInfo = $('<tr>').appendTo($tBody);
 
-    //Title row
-    const slHeadRow = tHead.insertRow();
-    ['#', 'Title', 'Duration'].forEach(label => {
-      const $songListHead = $('<th>', {
-        scope: 'col',
-        text: label,
-        class: `track${label}`
-      }); songListFrag.append($songListHead[0]);
-    }); slHeadRow.append(songListFrag)
-    
-    //Looping tracks info into the table
-    tracklist.forEach(track => { 
-      const albumDuration = durationFormat(track.duration)
-      const trackInfo = tBody.insertRow();
-      [track['@attr'].rank, track.name, albumDuration].forEach(value => {
-        const trackData = trackInfo.insertCell();
+            $([track['@attr'].rank, track.name, albumDuration]).each((_, value) => {
+                $('<td>', { text: value }).appendTo($trackInfo)
+        })
+        })
+        
+        //Create table footer for displaying total album runtime
+        const $trackListFooter = $('<tr>').appendTo($tFoot);
+        $('<th>', { scope: 'row', colSpan: '2', text: 'Total runtime' }).appendTo($trackListFooter); 
+            let total = tracklist.reduce((sum, track) => sum + Number(track.duration || 0), 0) //Calculate total album runtime from duration array, starting sum at 0
+            $trackListFooter.append( $('<td>', { text: durationFormat(total) }).appendTo($trackListFooter)); // Display runtime in the footer
 
-        //Text scroll for overflowing text
-        const scrollSpan = document.createElement('span');
-        scrollSpan.classList.add('scrollText');
-        scrollSpan.textContent = value;
-
-        trackData.append(scrollSpan);
-        trackData.classList.add('scrollCell');
-
-      })
-    })
-    
-    //Create table footer for displaying total album runtime
-    const songListFooter = tFoot.insertRow();
-    const $slFooterHead = $('<th>', { scope: 'row', colSpan: '2', text: 'Total runtime' }); 
-    songListFooter.append($slFooterHead[0])
-    
-    //Calculate total album runtime from duration array, starting sum at 0
-    let total = tracklist.reduce((sum, track) => sum + Number(track.duration || 0), 0)
-
-    // Display runtime in the footer
-    const $albumRuntime = $('<td>', { text: durationFormat(total) });
-    songListFooter.append($albumRuntime[0]);
-
-    
     //albumDiv.appendChild(tbl);
-    songListFrag.append(tbl)
-    return songListFrag
+    $tracklistFrag.append($tbl)
+    return $tracklistFrag
   }
 
 
@@ -316,12 +304,9 @@ const createAlbumInfo = (album) => {
     const $trackListHeading = $('<h2>', { class: 'tracklistHeading', text: 'Tracklist' });
 
         const albumInfoRows = (title, value) => {
-            const $row = $('<tr>');
-            const $heading = $('<th>', { scope: 'row', text: title }); 
-        
-            const $info = $('<td>', { text: value });
-
-            $row.append($heading, $info);
+            const $row = $('<tr>').append(
+            $('<th>', { scope: 'row', text: title }), 
+            $('<td>', { text: value }))
             return $row
         }
     $albumInfoTbl.append(
@@ -385,25 +370,7 @@ const showSearchSuggestions = async () => {
 //#region 7. Event Listeners
 (function($) {
     $(function() {
-        //#region 7.1 Search listeners
-
-            //Clickable search results
-            $('.searchResults').on('click', (e) => {
-                const resultLi = e.target.closest('li');
-                showArtistInfo(resultLi.textContent.trim(), $('.artistInformation'));
-                $('.searchResults').empty().hide();
-            });
-            
-            //Keep clear button hidden unless the field has text in it
-            $('.searchInput').on('input', (() => {
-                if ($('.searchInput').val().trim() !== '') {
-                    $('.clearBtn').show();
-                } else {
-                    $('.clearBtn').hide();
-                }
-            }));
-
-
+        //#region 7.1 Top div listeners
 
             //Enable button when search is focused
             $('.searchInput').on('focus', (() => {
@@ -435,6 +402,25 @@ const showSearchSuggestions = async () => {
                 $('.searchResults').empty().hide();
 
             }))
+
+            //Clickable search results
+            $('.searchResults').on('click', (e) => {
+                const resultLi = e.target.closest('li');
+                showArtistInfo(resultLi.textContent.trim(), $('.artistInformation'));
+                $('.searchResults').empty().hide();
+                $('.artistSearch')[0].reset();
+                $('.clearBtn').hide()
+                $('.searchInput')[0].blur();
+            });
+            
+            //Keep clear button hidden unless the field has text in it
+            $('.searchInput').on('input', (() => {
+                if ($('.searchInput').val().trim() !== '') {
+                    $('.clearBtn').show();
+                } else {
+                    $('.clearBtn').hide();
+                }
+            }));
 
             $('.themeSwitch input').on('change', function() {
                 if(this.checked) {
@@ -478,16 +464,10 @@ const showSearchSuggestions = async () => {
             //Artistlist
             $(document).on('click','.artistList li', function(e)  {
                 showArtistInfo($(this).text(), $('.artistInformation')) 
-                //const artistLi = e.target.closest('li');
-                //if (!artistLi || !this.contains(artistLi)) return; //Ignore clicks outside intended elements
-                    
             })
             //Albumlist
             $(document).on('click','.albumList li', function(e) {
                 showAlbumInfo($('.artistName').text(), $(this).text())
-                //const albumLi = e.target.closest('.albumList > li');
-                    //if (!albumLi || albumUl.contains(albumLi)) return; //Ignore clicks outside intended elements
-                    
             })
         //#endregion
 
