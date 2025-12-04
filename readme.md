@@ -1,5 +1,5 @@
 # Projektin nimi ja tekijät
-Projektin nimi on MusicLore ja tekijä on Arttu Lindqvist.
+Projektin nimi on MusicLore 2.0 ja tekijä on Arttu Lindqvist.
 
 ## Verkkolinkit:
 Pääset julkaistuun sovellukseen käsiksi osoitteessa [netlify.app](linkki)
@@ -45,7 +45,7 @@ Oppimistani tukisi mahdollisesti lisää jos kävisin useammin lähiopetuksessa.
 - [Lisenssi](#lisenssi)
 
 ## Tietoja sovelluksesta
-MusicLore 2.0 on parannelty versio aikaisemmasta sovelluksestani MusicLore. Sovellus joka tarjoaa käyttäjälle tietoa erilaisista musiikkartisteista ja heidän julkaisuistaan. Sovellus tarjoaa valmiiksi muutaman artistin mutta hän voi myös vapaasti hakea artistia nimellä hakukentän avulla.
+MusicLore 2.0 on parannelty versio aikaisemmasta sovelluksestani MusicLore. Se on web-sovellus joka tarjoaa käyttäjälle tietoa erilaisista musiikkartisteista ja heidän julkaisuistaan. Sovellukseen on sisällytetty valmiiksi muutama artisti lähinnä demo-tarkoitusta varten mutta arvot on helppo muokata omiin suosikkeihin `index.html` tiedostosta. Käyttäjä voi myös vapaasti hakea artistia nimellä hakukentän avulla.
 
 Sovellus hakee LastFM:stä dataa ja esittää ne sivulla. Käyttäjä saa seuraavaa tietoa:
 
