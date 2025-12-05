@@ -2,7 +2,7 @@
 Projektin nimi on MusicLore 2.0 ja tekijä on Arttu Lindqvist.
 
 ## Verkkolinkit:
-Pääset julkaistuun sovellukseen käsiksi osoitteessa [netlify.app](linkki)
+Pääset julkaistuun sovellukseen käsiksi osoitteessa [netlify.app](https://musiclore2.netlify.app/)
 
 Linkki projektin videoesittelyyn osoitteessa [video.laurea.fi](linkki)
 
