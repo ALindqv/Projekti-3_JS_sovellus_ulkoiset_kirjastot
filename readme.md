@@ -4,7 +4,7 @@ Projektin nimi on MusicLore 2.0 ja tekijä on Arttu Lindqvist.
 ## Verkkolinkit:
 Pääset julkaistuun sovellukseen käsiksi osoitteessa [netlify.app](https://musiclore2.netlify.app/)
 
-Linkki projektin videoesittelyyn osoitteessa [video.laurea.fi](linkki)
+Linkki projektin videoesittelyyn osoitteessa [video.laurea.fi](https://video.laurea.fi/media/Projekti+3+esittely/0_1jdj53jy)
 
 ## Työn jakautuminen 
 Työmäärä jakautui noin kahden viikon päivittäiseen työstämiseen. Kokonaisaika projektin valmistumiselle oli noin 75 tuntia.
@@ -72,8 +72,8 @@ Jos näitä tietoja ei ole saatavilla, sovellus kertoo käyttäjälle.
 - Pitkät artistien/albumien/kappalaiden nimet katkeavat eikä niitä pysty katsoa kokonaan. Tekstin vierittäsanimaatio tai tooltip-ratkaisu on yksi suunnitelluista ominaisuuksista.
 
 ## Kuvakaappaukset
-Lisää tähän vähintään yksi kuvakaappaus toimivasta sovelluksesta  
-`![Kirjoittaminen](https://unsplash.com/photos/VBPzRgd7gfc)`
+![Tumma tausta](/assets/screenshots/dark_mode.png)
+![Vaalea tausta](/assets/screenshots/light_mode.png)
 
 ## Teknologiat 
 Käytin seuraavia teknologioita: 
@@ -115,6 +115,6 @@ Muita lähteitä:
 - [W3Schools](https://www.w3schools.com/)
 
 ## Lisenssi
-Valitse projektille lisenssi seuraamalla tätä [opasta](https://docs.github.com/en/communities/setting-up-your-project-for-healthy-contributions/adding-a-license-to-a-repository).
+MIT License
 
-Esimerkki: MIT-lisenssi @ [tekijä](author.com)
+Copyright (c) 2025 Arttu Lindqvist
