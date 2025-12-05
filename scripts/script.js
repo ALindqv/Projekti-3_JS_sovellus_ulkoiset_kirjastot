@@ -11,13 +11,6 @@
 
 //#region 1. Global variables
 
-const { 
-  OverlayScrollbars, 
-  ScrollbarsHidingPlugin, 
-  SizeObserverPlugin, 
-  ClickScrollPlugin  
-} = OverlayScrollbarsGlobal;
-
 const nullReplace = 'N/A'; // Cleaner display for null values
 //#endregion
 
@@ -28,7 +21,7 @@ const getInfo = async (action, params = {}) => {
     return res.data;
 } 
 
-//Reduce excessive API calls
+//Reduce excessive API calls with a delay
 const debounce = (func, delay) => {
     let timeout;
     return function(...args) {
